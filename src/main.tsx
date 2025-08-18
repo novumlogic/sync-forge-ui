@@ -31,6 +31,8 @@ import { RouterProvider } from "react-router/dom";
 import type RouteHandle from "@/type/route_handle.ts";
 import RootLayout from "./layouts/root_layout";
 import Builder from "@/pages/builder";
+import { ReactFlowProvider } from "@xyflow/react";
+import { DnDProvider } from "./providers/dnd_provider";
 
 const router = createBrowserRouter([
   {
@@ -57,8 +59,12 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <DatabaseProvider schema={null}>
-      <Toaster />
-      <RouterProvider router={router}></RouterProvider>
+      <DnDProvider>
+        <ReactFlowProvider>
+          <Toaster />
+          <RouterProvider router={router}></RouterProvider>
+        </ReactFlowProvider>
+      </DnDProvider>
     </DatabaseProvider>
   </StrictMode>,
 );

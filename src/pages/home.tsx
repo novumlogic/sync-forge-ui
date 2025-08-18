@@ -57,7 +57,7 @@ export default function Home() {
   }
 
   const { nodes, edges } = database.generateGraph(schema);
-
+  
   return (
     <div>
       <div style={{ width: "98dvw", height: "87dvh" }}>
