@@ -22,7 +22,7 @@
 
 import { Handle, type NodeProps, Position } from "@xyflow/react";
 import { Fragment, type JSX } from "react";
-import type { TableNode } from "@/type/TableNode.ts";
+import type { TableNode } from "@/type/table_node";
 import { KeyIcon } from "@heroicons/react/24/solid";
 import { FingerPrintIcon } from "@heroicons/react/24/outline";
 

@@ -20,11 +20,17 @@
  * SOFTWARE.
  */
 
-import type TableColumn from "@/dto/TableColumn.ts";
-import type { Node } from "@xyflow/react";
+import { useContext } from "react";
+import { DatabaseContext } from "@/providers/database_provider";
 
-export type TableNodeData = {
-  tableName: string;
-  columns: ReadonlyArray<TableColumn>;
+const useDatabase = () => {
+  const context = useContext(DatabaseContext);
+  if (!context) {
+    throw new Error(
+      "useDatabase Hook must be used within the Database Provider",
+    );
+  }
+  return context;
 };
-export type TableNode = Node<TableNodeData, "table">;
+
+export default useDatabase;

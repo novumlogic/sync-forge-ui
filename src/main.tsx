@@ -24,7 +24,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "@/index.css";
 import Home from "@/pages/home.tsx";
-import DatabaseProvider from "@/providers/DatabaseProvider.tsx";
+import DatabaseProvider from "@/providers/database_provider";
 import { Toaster } from "@/components/ui/sonner.tsx";
 import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";

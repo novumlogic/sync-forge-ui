@@ -20,6 +20,11 @@
  * SOFTWARE.
  */
 
-import type TableColumn from "@/dto/TableColumn.ts";
+import type TableColumn from "@/dto/table_column";
+import type { Node } from "@xyflow/react";
 
-export type DatabaseSchema = Record<string, Array<TableColumn>>;
+export type TableNodeData = {
+  tableName: string;
+  columns: ReadonlyArray<TableColumn>;
+};
+export type TableNode = Node<TableNodeData, "table">;

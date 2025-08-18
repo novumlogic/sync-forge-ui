@@ -23,7 +23,7 @@
 import { useEffect, type JSX } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
-import Database from "@/controllers/Database.ts";
+import Database from "@/controllers/database";
 import { toast } from "sonner";
 import { Link, useLocation, useMatches } from "react-router";
 import type RouteHandle from "@/type/route_handle";

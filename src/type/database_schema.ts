@@ -20,15 +20,6 @@
  * SOFTWARE.
  */
 
-import type ForeignKey from "@/dto/ForeignKey.ts";
+import type TableColumn from "@/dto/table_column";
 
-export default interface TableColumn {
-  column_name: string;
-  data_type: string;
-  column_default: string;
-  is_nullable: string;
-  is_primary_key: string;
-  is_unique: string;
-  foreign_keys: Array<ForeignKey>;
-  check_constraints: Array<string>;
-}
+export type DatabaseSchema = Record<string, Array<TableColumn>>;

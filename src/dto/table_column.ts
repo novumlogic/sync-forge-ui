@@ -20,17 +20,15 @@
  * SOFTWARE.
  */
 
-import { useContext } from "react";
-import { DatabaseContext } from "@/providers/DatabaseProvider.tsx";
+import type ForeignKey from "@/dto/foreign_key";
 
-const useDatabase = () => {
-  const context = useContext(DatabaseContext);
-  if (!context) {
-    throw new Error(
-      "useDatabase Hook must be used within the Database Provider",
-    );
-  }
-  return context;
-};
-
-export default useDatabase;
+export default interface TableColumn {
+  column_name: string;
+  data_type: string;
+  column_default: string;
+  is_nullable: string;
+  is_primary_key: string;
+  is_unique: string;
+  foreign_keys: Array<ForeignKey>;
+  check_constraints: Array<string>;
+}
