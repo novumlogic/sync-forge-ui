@@ -60,7 +60,7 @@ export default function Home() {
 
   return (
     <div>
-      <div style={{ width: "100dvw", height: "95dvh" }}>
+      <div style={{ width: "98dvw", height: "87dvh" }}>
         <ReactFlow
           nodeTypes={{ table: TableNode }}
           defaultNodes={nodes}
@@ -75,7 +75,7 @@ export default function Home() {
       </div>
       <div
         className={
-          "flex h-[5dvh] w-full items-center justify-center space-x-10 border-t"
+          "flex h-[5dvh] w-full items-center justify-center space-x-10 border-t bottom-0 fixed"
         }
       >
         <div className={"flex items-center gap-1 font-mono"}>

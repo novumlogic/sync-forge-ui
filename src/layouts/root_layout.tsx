@@ -6,7 +6,7 @@ export default function RootLayout(): JSX.Element {
   return (
     <div className={"flex min-h-dvh flex-col"}>
       <NavBar />
-      <main>
+      <main className={"pt-18"}>
         <Outlet />
       </main>
     </div>

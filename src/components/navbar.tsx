@@ -25,13 +25,13 @@ import { Button } from "@/components/ui/button.tsx";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import Database from "@/controllers/Database.ts";
 import { toast } from "sonner";
-import { useMatches } from "react-router";
+import { Link, useLocation, useMatches } from "react-router";
 import type RouteHandle from "@/type/route_handle";
 
 export default function Navbar(): JSX.Element {
   const matches = useMatches();
+  const location = useLocation();
 
-  // find deepest (last) match that has a handle.title
   const matchWithTitle = [...matches]
     .reverse()
     .find((m) => (m.handle as RouteHandle | undefined)?.title);
@@ -50,7 +50,17 @@ export default function Navbar(): JSX.Element {
       <div className="flex items-center">
         <h1 className="text-xl font-bold">{title}</h1>
       </div>
-      <div>
+      <div className={"fles space-x-3"}>
+        <Link to={location.pathname === "/" ? "/builder" : "/"}>
+          <Button variant={"outline"} className={"cursor-pointer"}>
+            <div className={"h-4 w-0"}/>
+            <span className={"block"}>
+              {location.pathname === "/builder"
+                ? "Database Schema"
+                : "Query Builder"}
+            </span>
+          </Button>
+        </Link>
         <Button
           className={"cursor-pointer"}
           onClick={async () => {
@@ -82,8 +92,8 @@ export default function Navbar(): JSX.Element {
             });
           }}
         >
-          <ArrowDownTrayIcon className={"size-4"} />
-          <span>Download DB</span>
+          <ArrowDownTrayIcon className={"size-4 inline-block"} />
+          <span className={"block"}>Download DB</span>
         </Button>
       </div>
     </header>

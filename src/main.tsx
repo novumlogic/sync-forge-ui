@@ -30,6 +30,7 @@ import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import type RouteHandle from "@/type/route_handle.ts";
 import RootLayout from "./layouts/root_layout";
+import Builder from "@/pages/builder";
 
 const router = createBrowserRouter([
   {
@@ -44,7 +45,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/builder",
-        element: <Home />,
+        element: <Builder />,
         handle: {
           title: "Query Builder",
         } satisfies RouteHandle,
