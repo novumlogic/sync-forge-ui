@@ -24,12 +24,13 @@ import { Handle, type NodeProps, Position } from "@xyflow/react";
 import { Fragment, type JSX } from "react";
 import type { TableNode } from "@/type/table_node";
 import { KeyIcon } from "@heroicons/react/24/solid";
-import { FingerPrintIcon } from "@heroicons/react/24/outline";
+import { CircleStackIcon, FingerPrintIcon } from "@heroicons/react/24/outline";
 
 export default function TableNode({ data }: NodeProps<TableNode>): JSX.Element {
   return (
     <div className="rounded-lg border bg-white">
-      <div className="bg-primary rounded-t-md px-2 py-3 font-semibold text-white">
+      <div className="bg-primary rounded-t-md px-2 py-3 font-semibold text-white flex items-center space-x-1">
+        <CircleStackIcon className={"size-6"} />
         <h5>{data.tableName}</h5>
       </div>
       <div className="flex flex-col gap-y-2 pt-4 pb-2">
