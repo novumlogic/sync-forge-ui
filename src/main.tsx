@@ -22,20 +22,42 @@
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./App.tsx";
+import "@/index.css";
+import Home from "@/pages/home.tsx";
 import DatabaseProvider from "@/providers/DatabaseProvider.tsx";
-import NavBar from "@/components/navbar.tsx";
 import { Toaster } from "@/components/ui/sonner.tsx";
+import { createBrowserRouter } from "react-router";
+import { RouterProvider } from "react-router/dom";
+import type RouteHandle from "@/type/route_handle.ts";
+import RootLayout from "./layouts/root_layout";
+
+const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    children: [
+      {
+        path: "/",
+        element: <Home />,
+        handle: {
+          title: "Database Schema",
+        } satisfies RouteHandle,
+      },
+      {
+        path: "/builder",
+        element: <Home />,
+        handle: {
+          title: "Query Builder",
+        } satisfies RouteHandle,
+      },
+    ],
+  },
+]);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <DatabaseProvider schema={null}>
       <Toaster />
-      <div className={"flex min-h-dvh flex-col"}>
-        <NavBar />
-        <App />
-      </div>
+      <RouterProvider router={router}></RouterProvider>
     </DatabaseProvider>
   </StrictMode>,
 );

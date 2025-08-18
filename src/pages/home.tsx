@@ -31,7 +31,7 @@ import { FingerPrintIcon } from "@heroicons/react/24/outline";
 
 const database: Database = new Database();
 
-export default function App() {
+export default function Home() {
   const { schema, dispatch } = useDatabase();
 
   useEffect(() => {
