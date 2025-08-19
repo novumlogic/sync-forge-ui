@@ -1,7 +1,20 @@
-type NodeProperties =  {
-  id: string;
-  type: "table" | "filter";
-  data: Record<string, unknown>;
-}
+import type TableColumn from "@/dto/table_column";
 
-export type { NodeProperties };
+type GenericNodeProperties = {
+  id: string;
+  name: string;
+  extras: Record<string, unknown>;
+};
+
+type TableNodeProperties = {
+  type: "table";
+  columns: Array<TableColumn>;
+} & GenericNodeProperties;
+
+type FilterNodeProperties = {
+  type: "filter";
+} & GenericNodeProperties;
+
+type NodeProperties = TableNodeProperties | FilterNodeProperties;
+
+export type { NodeProperties, TableNodeProperties, FilterNodeProperties };

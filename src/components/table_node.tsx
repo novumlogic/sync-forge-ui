@@ -20,19 +20,21 @@
  * SOFTWARE.
  */
 
-import { Handle, type NodeProps, Position } from "@xyflow/react";
+import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
 import { Fragment, type JSX } from "react";
-import type { TableNode } from "@/type/table_node";
 import { KeyIcon } from "@heroicons/react/24/solid";
 import { FingerPrintIcon } from "@heroicons/react/24/outline";
 import { Table2Icon } from "lucide-react";
+import type { TableNodeProperties } from "@/type/node_properties";
 
-export default function TableNode({ data }: NodeProps<TableNode>): JSX.Element {
+export default function TableNode({
+  data,
+}: NodeProps<Node<TableNodeProperties>>): JSX.Element {
   return (
     <div className="rounded-lg border bg-white">
       <div className="bg-primary flex items-center space-x-1 rounded-t-md px-2 py-3 font-semibold text-white">
         <Table2Icon className={"size-6"} />
-        <h5>{data.tableName}</h5>
+        <h5>{data.name}</h5>
       </div>
       <div className="flex flex-col gap-y-2 pt-4 pb-2">
         {data.columns.map((c) => (
@@ -42,18 +44,12 @@ export default function TableNode({ data }: NodeProps<TableNode>): JSX.Element {
           >
             <Handle
               type="target"
-              id={`${data.tableName}.${c.column_name}`}
+              id={`${data.name}.${c.column_name}-target`}
               position={Position.Left}
-              style={{
-                marginTop: 7,
-                left: 0,
-                position: "static",
-                display: "block",
-                visibility: "hidden",
-              }}
+              className={"invisible !static !left-0 mt-1 !block"}
             />
             <div
-              className={"flex w-full items-start justify-between space-x-5"}
+              className={"flex w-full items-center justify-between space-x-5"}
             >
               <div className={"flex items-center space-x-2 pl-1"}>
                 <div>
@@ -79,15 +75,9 @@ export default function TableNode({ data }: NodeProps<TableNode>): JSX.Element {
             </div>
             <Handle
               type="source"
-              id={`${data.tableName}.${c.column_name}`}
+              id={`${data.name}.${c.column_name}-source`}
               position={Position.Right}
-              style={{
-                marginTop: -2,
-                right: 0,
-                position: "static",
-                display: "block",
-                visibility: "hidden",
-              }}
+              className={"invisible !static !right-0 mt-1 !block"}
             />
           </div>
         ))}

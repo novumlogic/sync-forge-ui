@@ -5,7 +5,11 @@ import {
 } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll_area";
 import Database from "@/controllers/database";
-import { type NodeProperties } from "@/type/node_properties";
+import {
+  type FilterNodeProperties,
+  type NodeProperties,
+  type TableNodeProperties,
+} from "@/type/node_properties";
 import useDatabase from "@/hooks/use_database";
 import useDnD from "@/hooks/use_dnd";
 import {
@@ -17,6 +21,7 @@ import {
   useEdgesState,
   useNodesState,
   useReactFlow,
+  type Connection,
   type Edge,
   type Node,
   type NodeProps,
@@ -40,15 +45,16 @@ const SIDEPANEL_DEFAULT_WIDTH = 17;
 
 const FILTERS: Record<string, NodeProperties> = {
   select: {
-    id: `select`,
+    id: "select",
     type: "filter",
-    data: {
-      name: "select",
-    },
+    name: "select",
+    extras: {},
   },
 };
 
-function TableNode({ data }: NodeProps<Node<NodeProperties>>): JSX.Element {
+function TableNode({
+  data,
+}: NodeProps<Node<TableNodeProperties>>): JSX.Element {
   return (
     <div
       className={
@@ -67,7 +73,7 @@ function TableNode({ data }: NodeProps<Node<NodeProperties>>): JSX.Element {
         }
       >
         <Table2Icon className={"size-5 text-orange-600"} />
-        <span className={"block"}>{String(data.data["name"])}</span>
+        <span className={"block"}>{String(data.name)}</span>
       </div>
       <Handle
         type="source"
@@ -79,7 +85,9 @@ function TableNode({ data }: NodeProps<Node<NodeProperties>>): JSX.Element {
   );
 }
 
-function FilterNode({ data }: NodeProps<Node<NodeProperties>>): JSX.Element {
+function FilterNode({
+  data,
+}: NodeProps<Node<FilterNodeProperties>>): JSX.Element {
   return (
     <div
       className={
@@ -98,7 +106,7 @@ function FilterNode({ data }: NodeProps<Node<NodeProperties>>): JSX.Element {
         }
       >
         <FunnelIcon className={"size-5 text-purple-600"} />
-        <span className={"block"}>{String(data.data["name"])}</span>
+        <span className={"block"}>{String(data.name)}</span>
       </div>
       <Handle
         type="source"
@@ -122,7 +130,7 @@ export default function Builder(): JSX.Element {
   const { screenToFlowPosition } = useReactFlow();
 
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
+    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges],
   );
 
@@ -245,10 +253,9 @@ export default function Builder(): JSX.Element {
                   tableNodeDragStartHandler(event, {
                     id: `${nanoid()}--#--${table}`,
                     type: "table",
-                    data: {
-                      name: table,
-                      columns: schema[table],
-                    },
+                    name: table,
+                    columns: schema[table],
+                    extras: {},
                   })
                 }
               >
@@ -318,7 +325,7 @@ export default function Builder(): JSX.Element {
                   })
                 }
               >
-                <Table2Icon className={"size-5 text-purple-600"} />
+                <FunnelIcon className={"size-5 text-purple-600"} />
                 <span className={"block text-xs"}>{filterName}</span>
               </div>
             ))}

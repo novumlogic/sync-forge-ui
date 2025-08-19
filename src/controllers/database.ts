@@ -25,8 +25,8 @@ import type TableColumn from "@/dto/table_column";
 import { type Edge, type Node, Position } from "@xyflow/react";
 import type { DatabaseSchema } from "@/type/database_schema";
 import dagre from "@dagrejs/dagre";
-import type { TableNode, TableNodeData } from "@/type/table_node";
 import { API_BASE_URL } from "@/constants.ts";
+import type { TableNodeProperties } from "@/type/node_properties";
 
 export default class Database {
   private http: HttpService;
@@ -51,10 +51,10 @@ export default class Database {
   }
 
   public generateGraph(schema: DatabaseSchema): {
-    nodes: TableNode[];
+    nodes: Array<Node<TableNodeProperties, "table">>;
     edges: Edge[];
   } {
-    const nodes: TableNode[] = [];
+    const nodes: Array<Node<TableNodeProperties, "table">> = [];
     const edges: Edge[] = [];
 
     for (const [tableName, columns] of Object.entries(schema)) {
@@ -62,7 +62,13 @@ export default class Database {
         id: tableName,
         type: "table",
         position: { x: 0, y: 0 },
-        data: { tableName, columns },
+        data: {
+          id: tableName,
+          name: tableName,
+          type: "table",
+          columns: columns,
+          extras: {},
+        } satisfies TableNodeProperties,
       });
 
       for (const col of columns) {
@@ -71,8 +77,8 @@ export default class Database {
             id: fk.constraint_name,
             source: tableName,
             target: fk.table_name,
-            sourceHandle: `${tableName}.${col.column_name}`,
-            targetHandle: `${fk.table_name}.${fk.column_name}`,
+            sourceHandle: `${tableName}.${col.column_name}-source`,
+            targetHandle: `${fk.table_name}.${fk.column_name}-target`,
             type: "smoothstep",
             animated: true,
           });
@@ -80,11 +86,11 @@ export default class Database {
       }
     }
 
-    return this.createGraphLayout<TableNodeData, "table">(nodes, edges, "LR");
+    return this.createGraphLayout<TableNodeProperties, "table">(nodes, edges, "LR");
   }
 
   private createGraphLayout<
-    D extends TableNodeData,
+    D extends TableNodeProperties,
     T extends string | undefined = string,
   >(
     nodes: ReadonlyArray<Node<D, T>>,
