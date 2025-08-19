@@ -25,7 +25,7 @@ import { Fragment, type JSX } from "react";
 import { KeyIcon } from "@heroicons/react/24/solid";
 import { FingerPrintIcon } from "@heroicons/react/24/outline";
 import { Table2Icon } from "lucide-react";
-import type { TableNodeProperties } from "@/type/node_properties";
+import type { TableNodeProperties } from "@type/node_properties";
 
 export default function TableNode({
   data,

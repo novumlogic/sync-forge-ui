@@ -20,13 +20,13 @@
  * SOFTWARE.
  */
 
-import HttpService from "@/services/http_service";
-import type TableColumn from "@/dto/table_column";
+import HttpService from "@services/http_service";
+import type TableColumn from "@dto/table_column";
 import { type Edge, type Node, Position } from "@xyflow/react";
-import type { DatabaseSchema } from "@/type/database_schema";
+import type { DatabaseSchema } from "@type/database_schema";
 import dagre from "@dagrejs/dagre";
-import { API_BASE_URL } from "@/constants.ts";
-import type { TableNodeProperties } from "@/type/node_properties";
+import { API_BASE_URL } from "@constants";
+import type { TableNodeProperties } from "@type/node_properties";
 
 export default class Database {
   private http: HttpService;

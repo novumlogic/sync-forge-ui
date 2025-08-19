@@ -26,7 +26,7 @@ import {
   type ReactNode,
   useReducer,
 } from "react";
-import type { DatabaseSchema } from "@/type/database_schema";
+import type { DatabaseSchema } from "@type/database_schema";
 
 export type DatabaseAction = {
   type: "SET_SCHEMA";

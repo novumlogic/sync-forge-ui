@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-import type ForeignKey from "@/dto/foreign_key";
+import type ForeignKey from "@dto/foreign_key";
 
 export default interface TableColumn {
   column_name: string;

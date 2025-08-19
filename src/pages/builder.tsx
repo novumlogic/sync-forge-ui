@@ -24,16 +24,16 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "@/components/ui/resizable";
-import { ScrollArea } from "@/components/ui/scroll_area";
-import Database from "@/controllers/database";
+} from "@components/ui/resizable";
+import { ScrollArea } from "@components/ui/scroll_area";
+import Database from "@controllers/database";
 import {
   type FilterNodeProperties,
   type NodeProperties,
   type TableNodeProperties,
-} from "@/type/node_properties";
-import useDatabase from "@/hooks/use_database";
-import useDnD from "@/hooks/use_dnd";
+} from "@type/node_properties";
+import useDatabase from "@hooks/use_database";
+import useDnD from "@hooks/use_dnd";
 import {
   addEdge,
   Background,

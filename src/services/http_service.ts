@@ -24,7 +24,7 @@ import axios, {
   type AxiosInstance,
   type ResponseType,
 } from "axios";
-import { Err, Ok, type Result } from "@/lib/result.ts";
+import { Err, Ok, type Result } from "@lib/result.ts";
 
 export const StatusCode = {
   SUCCESS: 0,

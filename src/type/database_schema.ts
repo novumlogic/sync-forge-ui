@@ -20,6 +20,6 @@
  * SOFTWARE.
  */
 
-import type TableColumn from "@/dto/table_column";
+import type TableColumn from "@dto/table_column";
 
 export type DatabaseSchema = Record<string, Array<TableColumn>>;

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-import type TableColumn from "@/dto/table_column";
+import type TableColumn from "@dto/table_column";
 
 type GenericNodeProperties = {
   id: string;

@@ -22,15 +22,15 @@
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "@/index.css";
-import Home from "@/pages/home.tsx";
-import DatabaseProvider from "@/providers/database_provider";
-import { Toaster } from "@/components/ui/sonner.tsx";
+import "@styles/index.css";
+import Home from "@pages/home.tsx";
+import DatabaseProvider from "@providers/database_provider";
+import { Toaster } from "@components/ui/sonner.tsx";
 import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
-import type RouteHandle from "@/type/route_handle.ts";
+import type RouteHandle from "@type/route_handle.ts";
 import RootLayout from "./layouts/root_layout";
-import Builder from "@/pages/builder";
+import Builder from "@pages/builder";
 import { ReactFlowProvider } from "@xyflow/react";
 import { DnDProvider } from "./providers/dnd_provider";
 

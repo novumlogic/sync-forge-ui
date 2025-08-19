@@ -21,7 +21,7 @@
  */
 
 import { useContext } from "react";
-import { DatabaseContext } from "@/providers/database_provider";
+import { DatabaseContext } from "@providers/database_provider";
 
 const useDatabase = () => {
   const context = useContext(DatabaseContext);

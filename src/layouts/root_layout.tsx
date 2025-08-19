@@ -22,7 +22,7 @@
 
 import type { JSX } from "react";
 import { Outlet } from "react-router";
-import NavBar from "@/components/navbar.tsx";
+import NavBar from "@components/navbar.tsx";
 
 export default function RootLayout(): JSX.Element {
   return (

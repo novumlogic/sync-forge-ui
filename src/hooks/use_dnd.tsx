@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-import { DnDContext } from "@/providers/dnd_provider";
+import { DnDContext } from "@providers/dnd_provider";
 import { useContext } from "react";
 
 const useDnD = () => {

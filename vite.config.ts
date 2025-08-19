@@ -29,7 +29,18 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@styles": path.resolve(__dirname, "./src/styles"),
+      "@components": path.resolve(__dirname, "./src/components"),
+      "@controllers": path.resolve(__dirname, "./src/controllers"),
+      "@dto": path.resolve(__dirname, "./src/dto"),
+      "@hooks": path.resolve(__dirname, "./src/hooks"),
+      "@layouts": path.resolve(__dirname, "./src/layouts"),
+      "@lib": path.resolve(__dirname, "./src/lib"),
+      "@pages": path.resolve(__dirname, "./src/pages"),
+      "@providers": path.resolve(__dirname, "./src/providers"),
+      "@services": path.resolve(__dirname, "./src/services"),
+      "@type": path.resolve(__dirname, "./src/type"),
+      "@constants": path.resolve(__dirname, "./src/constants.ts"),
     },
   },
 });

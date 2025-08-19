@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-import type { NodeProperties } from "@/type/node_properties";
+import type { NodeProperties } from "@type/node_properties";
 import { createContext, useState, type ReactNode } from "react";
 
 interface DnDContextValue {
