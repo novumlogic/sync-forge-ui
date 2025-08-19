@@ -27,52 +27,36 @@ import {
 } from "@components/ui/resizable";
 import { ScrollArea } from "@components/ui/scroll_area";
 import Database from "@controllers/database";
-import {
-  type FilterNodeProperties,
-  type NodeProperties,
-  type TableNodeProperties,
-} from "@type/node_properties";
+import { type TableNodeProperties } from "@type/node_properties";
 import useDatabase from "@hooks/use_database";
-import useDnD from "@hooks/use_dnd";
 import {
-  addEdge,
   Background,
+  BackgroundVariant,
   Handle,
   Position,
   ReactFlow,
-  useEdgesState,
-  useNodesState,
-  useReactFlow,
-  type Connection,
   type Edge,
   type Node,
   type NodeProps,
   type ReactFlowInstance,
 } from "@xyflow/react";
 import { Table2Icon } from "lucide-react";
-import { nanoid } from "nanoid";
 import {
   Fragment,
+  useCallback,
   useEffect,
   useRef,
   useState,
   type JSX,
-  type DragEvent,
-  useCallback,
 } from "react";
-import { FunnelIcon } from "@heroicons/react/24/outline";
+import Editor from "@monaco-editor/react";
+import type { ImperativePanelHandle } from "react-resizable-panels";
+import useDebounce from "@hooks/use_debounce";
+import { Button } from "@components/ui/button";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
 const database: Database = new Database();
 const SIDEPANEL_DEFAULT_WIDTH = 17;
-
-const FILTERS: Record<string, NodeProperties> = {
-  select: {
-    id: "select",
-    type: "filter",
-    name: "select",
-    extras: {},
-  },
-};
 
 function TableNode({
   data,
@@ -107,99 +91,74 @@ function TableNode({
   );
 }
 
-function FilterNode({
-  data,
-}: NodeProps<Node<FilterNodeProperties>>): JSX.Element {
-  return (
-    <div
-      className={
-        "flex items-center rounded-lg border border-purple-600 bg-purple-100"
-      }
-    >
-      <Handle
-        type="target"
-        id={`${data.id}-target`}
-        position={Position.Left}
-        className={"!static !left-0 mt-2 !block !size-2.5 !bg-purple-600"}
-      />
-      <div
-        className={
-          "justify-betwee flex w-full items-center space-x-3 px-1 py-2 font-medium"
-        }
-      >
-        <FunnelIcon className={"size-5 text-purple-600"} />
-        <span className={"block"}>{String(data.name)}</span>
-      </div>
-      <Handle
-        type="source"
-        id={`${data.id}-source`}
-        position={Position.Right}
-        className={"!static !right-0 mt-2 !block !size-2.5 !bg-purple-600"}
-      />
-    </div>
-  );
-}
-
 export default function Builder(): JSX.Element {
-  const queryBuilderContainerRef = useRef<HTMLDivElement | null>(null);
-  const [reactFlowInstance, setReactFlowInstance] =
-    useState<ReactFlowInstance | null>(null);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { schema, dispatch } = useDatabase();
-  const [nodeProperties, setNodeProperties] = useDnD();
-  const { screenToFlowPosition } = useReactFlow();
 
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
+  const queryBuilderContainerRef = useRef<HTMLDivElement | null>(null);
+  const editorPanelRef = useRef<ImperativePanelHandle>(null);
+
+  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<
+    Node<TableNodeProperties, "table">
+  > | null>(null);
+  const [focusedNode, setFocusedNode] = useState<Node<
+    TableNodeProperties,
+    "table"
+  > | null>(null);
+  const [nodes, setNodes] = useState<Array<Node<TableNodeProperties, "table">>>(
+    [],
   );
+  const [edges, setEdges] = useState<Array<Edge>>([]);
+  const [editorContent, setEditorContent] = useState<string>("");
 
-  function tableNodeDragStartHandler(
-    event: DragEvent,
-    nodeProperties: NodeProperties,
-  ) {
-    setNodeProperties(nodeProperties);
-    event.dataTransfer.effectAllowed = "move";
-  }
+  const debouncedEditorContent = useDebounce(editorContent, 500);
 
-  function canvasDragStartHandler(event: DragEvent) {
-    setNodeProperties(nodeProperties);
-    event.dataTransfer.effectAllowed = "move";
-  }
+  const nodeClickHandler = useCallback(
+    (node: Node<TableNodeProperties, "table">) => {
+      setFocusedNode(node);
 
-  const canvasDragOverHandler = useCallback((event: DragEvent) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  }, []);
+      const query =
+        "query" in node.data.extras
+          ? String((node.data.extras as { query?: string }).query ?? "")
+          : "";
 
-  const canvasDropHandler = useCallback(
-    (event: DragEvent) => {
-      event.preventDefault();
+      setEditorContent(query);
 
-      if (nodeProperties == null) {
-        return;
+      if (!editorPanelRef.current?.isExpanded()) {
+        editorPanelRef.current?.expand(2 * SIDEPANEL_DEFAULT_WIDTH);
       }
-
-      const { left, top } = event.currentTarget.getBoundingClientRect();
-
-      const position = screenToFlowPosition({
-        x: event.clientX - left / 2,
-        y: event.clientY - top / 2,
-      });
-
-      const newNode: Node = {
-        id: nodeProperties.id,
-        position: position,
-        type: nodeProperties.type,
-        data: nodeProperties,
-      };
-
-      setNodes((nodes) => nodes.concat(newNode));
     },
-    [screenToFlowPosition, nodeProperties, setNodes],
+    [],
   );
+
+  useEffect(() => {
+    if (focusedNode === null) return;
+
+    setNodes((previousNodes) =>
+      previousNodes.map((node) => {
+        if (node.id !== focusedNode.id) return node;
+
+        const prevExtras = node.data.extras;
+        const newData = {
+          ...node.data,
+          extras: {
+            ...prevExtras,
+            query: debouncedEditorContent,
+          },
+        };
+
+        return {
+          ...node,
+          data: newData,
+        };
+      }),
+    );
+  }, [debouncedEditorContent, focusedNode]);
+
+  useEffect(() => {
+    if (focusedNode == null) {
+      editorPanelRef.current?.collapse();
+    }
+  }, [focusedNode]);
 
   useEffect(() => {
     if (schema !== null) {
@@ -244,6 +203,17 @@ export default function Builder(): JSX.Element {
     };
   }, [reactFlowInstance]);
 
+  useEffect(() => {
+    if (schema === null) return;
+
+    const graph = database.generateGraph(schema, {
+      no_columns: true,
+    });
+
+    setNodes(graph.nodes);
+    setEdges(graph.edges);
+  }, [schema]);
+
   if (schema === null) {
     return <Fragment />;
   }
@@ -252,9 +222,11 @@ export default function Builder(): JSX.Element {
     <div className="h-[92.5dvh]">
       <ResizablePanelGroup direction={"horizontal"} className={"h-full"}>
         <ResizablePanel
+          order={0}
           defaultSize={SIDEPANEL_DEFAULT_WIDTH}
           className={"h-full"}
           maxSize={SIDEPANEL_DEFAULT_WIDTH}
+          collapsible={true}
         >
           <div
             className={
@@ -267,19 +239,21 @@ export default function Builder(): JSX.Element {
             {(Object.keys(schema) as string[]).map((table) => (
               <div
                 key={table}
-                draggable={true}
+                draggable={false}
                 className={
                   "mb-3 flex h-10 cursor-pointer items-center space-x-2 rounded-lg border px-2 py-3 font-semibold transition-all duration-150 select-none hover:bg-gray-100"
                 }
-                onDragStart={(event) =>
-                  tableNodeDragStartHandler(event, {
-                    id: `${nanoid()}--#--${table}`,
-                    type: "table",
-                    name: table,
-                    columns: schema[table],
-                    extras: {},
-                  })
-                }
+                onClick={() => {
+                  reactFlowInstance?.fitView({
+                    nodes: [
+                      {
+                        id: table,
+                      },
+                    ],
+                    duration: 1000,
+                    interpolate: "smooth",
+                  });
+                }}
               >
                 <Table2Icon className={"size-5 text-orange-600"} />
                 <span className={"block text-xs"}>{table}</span>
@@ -289,7 +263,8 @@ export default function Builder(): JSX.Element {
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel
-          defaultSize={Math.abs(100 - 2 * SIDEPANEL_DEFAULT_WIDTH)}
+          order={1}
+          defaultSize={Math.abs(100 - SIDEPANEL_DEFAULT_WIDTH)}
           className={"h-full"}
         >
           <div ref={queryBuilderContainerRef} className={"h-full w-full"}>
@@ -298,15 +273,8 @@ export default function Builder(): JSX.Element {
               edges={edges}
               fitView={false}
               className={"h-full w-full"}
-              onDragStart={(event) => canvasDragStartHandler(event)}
-              onDragOver={canvasDragOverHandler}
-              onDrop={canvasDropHandler}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
               nodeTypes={{
                 table: TableNode,
-                filter: FilterNode,
               }}
               proOptions={{
                 hideAttribution: true,
@@ -314,44 +282,53 @@ export default function Builder(): JSX.Element {
               onInit={(instance) => {
                 setReactFlowInstance(instance);
               }}
+              onNodeClick={(_, node) => nodeClickHandler(node)}
             >
-              <Background />
+              <Background variant={BackgroundVariant.Dots} />
             </ReactFlow>
           </div>
         </ResizablePanel>
-        <ResizableHandle />
+        <ResizableHandle hidden={focusedNode === null} />
         <ResizablePanel
-          defaultSize={SIDEPANEL_DEFAULT_WIDTH}
+          order={2}
+          defaultSize={0}
           className={"h-full"}
-          maxSize={SIDEPANEL_DEFAULT_WIDTH}
+          maxSize={4 * SIDEPANEL_DEFAULT_WIDTH}
+          collapsible={true}
+          ref={editorPanelRef}
         >
-          <div
-            className={
-              "flex w-full items-center justify-start px-3 pt-5 pb-3 font-bold"
-            }
-          >
-            <h3>Filters</h3>
-          </div>
-          <ScrollArea className={"h-[92.5dvh] w-full px-2 py-3"}>
-            {(Object.keys(FILTERS) as string[]).map((filterName) => (
-              <div
-                key={filterName}
-                draggable={true}
-                className={
-                  "mb-3 flex h-10 cursor-pointer items-center space-x-2 rounded-lg border px-2 py-3 font-semibold transition-all duration-150 select-none hover:bg-gray-100"
-                }
-                onDragStart={(event) =>
-                  tableNodeDragStartHandler(event, {
-                    ...FILTERS[filterName],
-                    id: `${nanoid()}--#--filter:select`,
-                  })
-                }
-              >
-                <FunnelIcon className={"size-5 text-purple-600"} />
-                <span className={"block text-xs"}>{filterName}</span>
+          <div className={"h-full w-full"}>
+            <div className={"flex items-center justify-between px-3 py-4"}>
+              <div className={"flex items-center space-x-2"}>
+                <Table2Icon className={"size-5 text-orange-600"} />
+                <h5 className={"font-mono font-medium"}>
+                  {String(focusedNode?.data.name)}
+                </h5>
               </div>
-            ))}
-          </ScrollArea>
+              <Button
+                size={"icon"}
+                variant={"secondary"}
+                className={"cursor-pointer bg-transparent"}
+                onClick={() => {
+                  setFocusedNode(null);
+                  editorPanelRef.current?.collapse();
+                }}
+              >
+                <XMarkIcon />
+              </Button>
+            </div>
+            <Editor
+              className={"h-full w-full"}
+              defaultLanguage={"sql"}
+              value={editorContent}
+              options={{
+                minimap: {
+                  enabled: false,
+                },
+              }}
+              onChange={(value) => setEditorContent(value ?? "")}
+            />
+          </div>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

@@ -12,6 +12,7 @@
   "dependencies": {
     "@dagrejs/dagre": "^1.1.5",
     "@heroicons/react": "^2.2.0",
+    "@monaco-editor/react": "4.7.0-rc.0",
     "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "^4.1.11",

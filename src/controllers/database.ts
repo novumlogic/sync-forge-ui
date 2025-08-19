@@ -50,12 +50,21 @@ export default class Database {
     });
   }
 
-  public generateGraph(schema: DatabaseSchema): {
+  public generateGraph(
+    schema: DatabaseSchema,
+    options?: {
+      no_columns?: boolean;
+    },
+  ): {
     nodes: Array<Node<TableNodeProperties, "table">>;
     edges: Edge[];
   } {
     const nodes: Array<Node<TableNodeProperties, "table">> = [];
     const edges: Edge[] = [];
+
+    const givenOptions: typeof options = {
+      no_columns: options?.no_columns ?? false,
+    };
 
     for (const [tableName, columns] of Object.entries(schema)) {
       nodes.push({
@@ -77,8 +86,12 @@ export default class Database {
             id: fk.constraint_name,
             source: tableName,
             target: fk.table_name,
-            sourceHandle: `${tableName}.${col.column_name}-source`,
-            targetHandle: `${fk.table_name}.${fk.column_name}-target`,
+            sourceHandle: givenOptions.no_columns
+              ? `${tableName}-source`
+              : `${tableName}.${col.column_name}-source`,
+            targetHandle: givenOptions.no_columns
+              ? `${fk.table_name}-target`
+              : `${fk.table_name}.${fk.column_name}-target`,
             type: "smoothstep",
             animated: true,
           });
@@ -86,7 +99,11 @@ export default class Database {
       }
     }
 
-    return this.createGraphLayout<TableNodeProperties, "table">(nodes, edges, "LR");
+    return this.createGraphLayout<TableNodeProperties, "table">(
+      nodes,
+      edges,
+      "LR",
+    );
   }
 
   private createGraphLayout<
