@@ -1,6 +1,7 @@
 # sync-forge-ui
 
 This repo contains the UI for the Sync Forge project.
+![Query Builder](./assets/docs/images/query-builder.png)
 
 ### Getting Started
 
