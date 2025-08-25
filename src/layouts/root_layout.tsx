@@ -26,7 +26,7 @@ import NavBar from "@components/navbar.tsx";
 
 export default function RootLayout(): JSX.Element {
   return (
-    <div className={"flex min-h-dvh flex-col"}>
+    <div className={"flex min-h-dvh flex-col dark"}>
       <NavBar />
       <main className={"pt-18"}>
         <Outlet />

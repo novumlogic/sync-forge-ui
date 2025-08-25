@@ -23,7 +23,7 @@
 import { Fragment, useEffect } from "react";
 import Database from "@controllers/database";
 import useDatabase from "@hooks/use_database";
-import { Background, ReactFlow } from "@xyflow/react";
+import { Background, BackgroundVariant, ReactFlow } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import TableNode from "@components/table_node";
 import { KeyIcon } from "@heroicons/react/24/solid";
@@ -60,7 +60,7 @@ export default function Home() {
   
   return (
     <div>
-      <div style={{ width: "98dvw", height: "87dvh" }}>
+      <div style={{ width: "100dvw", height: "88dvh" }}>
         <ReactFlow
           nodeTypes={{ table: TableNode }}
           defaultNodes={nodes}
@@ -70,12 +70,12 @@ export default function Home() {
             hideAttribution: true,
           }}
         >
-          <Background />
+          <Background variant={BackgroundVariant.Dots} bgColor="#171717"/>
         </ReactFlow>
       </div>
       <div
         className={
-          "flex h-[5dvh] w-full items-center justify-center space-x-10 border-t bottom-0 fixed"
+          "flex h-[5dvh] w-full items-center justify-center space-x-10 border-t bottom-0 fixed bg-background text-foreground"
         }
       >
         <div className={"flex items-center gap-1 font-mono"}>
@@ -87,7 +87,7 @@ export default function Home() {
           <span className={"text-xs"}>Foreign Key</span>
         </div>
         <div className={"flex items-center gap-1 font-mono"}>
-          <FingerPrintIcon className={"size-4 text-purple-700"} />
+          <FingerPrintIcon className={"size-4 text-purple-300"} />
           <span className={"text-xs"}>Unique</span>
         </div>
       </div>

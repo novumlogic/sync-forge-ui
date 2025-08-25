@@ -31,8 +31,8 @@ export default function TableNode({
   data,
 }: NodeProps<Node<TableNodeProperties>>): JSX.Element {
   return (
-    <div className="rounded-lg border bg-white">
-      <div className="bg-primary flex items-center space-x-1 rounded-t-md px-2 py-3 font-semibold text-white">
+    <div className="rounded-lg border bg-primary-foreground">
+      <div className="bg-primary flex items-center space-x-1 rounded-t-md px-2 py-3 font-semibold text-foreground">
         <Table2Icon className={"size-6"} />
         <h5>{data.name}</h5>
       </div>

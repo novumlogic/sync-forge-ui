@@ -45,7 +45,7 @@ export default function Navbar(): JSX.Element {
 
   return (
     <header
-      className={`fixed z-50 flex h-18 w-full items-center justify-between border-b bg-white/70 px-3 backdrop-blur-3xl md:px-16`}
+      className={`fixed z-50 flex h-18 w-full items-center justify-between border-b border-b-border bg-stone-900 text-foreground px-3 backdrop-blur-3xl md:px-16`}
     >
       <div className="flex items-center">
         <h1 className="text-xl font-bold">{title}</h1>

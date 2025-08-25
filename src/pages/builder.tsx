@@ -75,28 +75,28 @@ function TableNode({
   return (
     <div
       className={
-        "flex items-center rounded-lg border border-orange-600 bg-orange-100"
+        "flex items-center rounded-lg border border-primary bg-primary-foreground"
       }
     >
       <Handle
         type="target"
         id={`${data.id}-target`}
         position={Position.Left}
-        className={"!static !left-0 mt-2 !block !size-2.5 !bg-orange-600"}
+        className={"!static !left-0 mt-2 !block !size-2.5 !bg-primary"}
       />
       <div
         className={
           "flex w-full items-center justify-between space-x-3 px-1 py-2 font-medium"
         }
       >
-        <Table2Icon className={"size-5 text-orange-600"} />
+        <Table2Icon className={"size-5 text-primary"} />
         <span className={"block"}>{String(data.name)}</span>
       </div>
       <Handle
         type="source"
         id={`${data.id}-source`}
         position={Position.Right}
-        className={"!static !right-0 mt-2 !block !size-2.5 !bg-orange-600"}
+        className={"!static !right-0 mt-2 !block !size-2.5 !bg-primary"}
       />
     </div>
   );
@@ -280,18 +280,18 @@ export default function Builder(): JSX.Element {
         >
           <div
             className={
-              "flex w-full items-center justify-start px-3 pt-5 pb-3 font-bold"
+              "flex w-full items-center justify-start px-3 pt-5 pb-3 font-bold bg-background text-foreground"
             }
           >
             <h3>Tables</h3>
           </div>
-          <ScrollArea className={"h-[92.5dvh] w-full px-2 pt-3 pb-20"}>
+          <ScrollArea className={"h-[92.5dvh] w-full px-2 pt-3 pb-20 bg-background text-foreground"}>
             {(Object.keys(schema) as string[]).map((table) => (
               <div
                 key={table}
                 draggable={false}
                 className={
-                  "mb-3 flex h-10 cursor-pointer items-center space-x-2 rounded-lg border px-2 py-3 font-semibold transition-all duration-150 select-none hover:bg-gray-100"
+                  "mb-3 flex h-10 cursor-pointer items-center space-x-2 rounded-lg border px-2 py-3 font-semibold transition-all duration-150 select-none hover:bg-stone-800"
                 }
                 onClick={() => {
                   reactFlowInstance?.fitView({
@@ -305,13 +305,13 @@ export default function Builder(): JSX.Element {
                   });
                 }}
               >
-                <Table2Icon className={"size-5 text-orange-600"} />
+                <Table2Icon className={"size-5 text-primary"} />
                 <span className={"block text-xs"}>{table}</span>
               </div>
             ))}
           </ScrollArea>
         </ResizablePanel>
-        <ResizableHandle />
+        <ResizableHandle className={"bg-border"} />
         <ResizablePanel
           order={1}
           defaultSize={Math.abs(100 - SIDEPANEL_DEFAULT_WIDTH)}
@@ -337,7 +337,7 @@ export default function Builder(): JSX.Element {
               <Panel position="top-center">
                 <div
                   className={
-                    "flex w-32 items-center justify-evenly rounded-lg border bg-white py-1 shadow-md"
+                    "flex w-32 items-center justify-evenly rounded-lg border border-border bg-background py-1 shadow-md"
                   }
                 >
                   <Tooltip>
@@ -384,11 +384,11 @@ export default function Builder(): JSX.Element {
                   </Tooltip>
                 </div>
               </Panel>
-              <Background variant={BackgroundVariant.Dots} />
+              <Background variant={BackgroundVariant.Dots} bgColor="#171717"/>
             </ReactFlow>
           </div>
         </ResizablePanel>
-        <ResizableHandle hidden={focusedNode === null} />
+        <ResizableHandle hidden={focusedNode === null} className={"bg-border"}/>
         <ResizablePanel
           order={2}
           defaultSize={0}
@@ -397,10 +397,10 @@ export default function Builder(): JSX.Element {
           collapsible={true}
           ref={editorPanelRef}
         >
-          <div className={"h-full w-full"}>
+          <div className={"h-full w-full bg-stone-900 text-foreground"}>
             <div className={"flex items-center justify-between px-3 py-4"}>
               <div className={"flex items-center space-x-2"}>
-                <Table2Icon className={"size-5 text-orange-600"} />
+                <Table2Icon className={"size-5 text-primary"} />
                 <h5 className={"font-mono font-medium"}>
                   {String(focusedNode?.data.name)}
                 </h5>
@@ -418,7 +418,8 @@ export default function Builder(): JSX.Element {
               </Button>
             </div>
             <Editor
-              className={"h-full w-full"}
+              className={"h-full w-ful"}
+              theme={"vs-dark"}
               defaultLanguage={"sql"}
               value={editorContent}
               options={{
