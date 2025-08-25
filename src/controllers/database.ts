@@ -20,13 +20,22 @@
  * SOFTWARE.
  */
 
-import HttpService from "@services/http_service";
+import HttpService, {
+  type HttpError,
+  type HttpSuccess,
+} from "@services/http_service";
 import type TableColumn from "@dto/table_column";
-import { type Edge, type Node, Position } from "@xyflow/react";
+import {
+  type Edge,
+  type Node,
+  Position,
+  type ReactFlowJsonObject,
+} from "@xyflow/react";
 import type { DatabaseSchema } from "@type/database_schema";
 import dagre from "@dagrejs/dagre";
 import { API_BASE_URL } from "@constants";
 import type { TableNodeProperties } from "@type/node_properties";
+import type { Result } from "@lib/result";
 
 export default class Database {
   private http: HttpService;
@@ -43,7 +52,9 @@ export default class Database {
     );
   }
 
-  public async downloadDatabase() {
+  public async downloadDatabase(): Promise<
+    Result<HttpSuccess<ArrayBuffer>, HttpError>
+  > {
     return this.http.get<ArrayBuffer>("/sync-database", {
       requestTimeout: 120000,
       responseType: "arraybuffer",
@@ -104,6 +115,34 @@ export default class Database {
       edges,
       "LR",
     );
+  }
+
+  public async getQuery(
+    queryName: string,
+  ): Promise<
+    Result<
+      HttpSuccess<
+        ReactFlowJsonObject<Node<TableNodeProperties, "table">, Edge>
+      >,
+      HttpError
+    >
+  > {
+    return this.http.get<
+      ReactFlowJsonObject<Node<TableNodeProperties, "table">, Edge>
+    >(`/queries/${queryName}`);
+  }
+
+  public async saveQuery(
+    queryName: string,
+    graph: ReactFlowJsonObject<Node<TableNodeProperties, "table">, Edge>,
+  ): Promise<Result<HttpSuccess<Record<string, unknown>>, HttpError>> {
+    return this.http.post<Record<string, unknown>>(`/queries/${queryName}`, {
+      ...graph,
+    });
+  }
+
+  public async executeQuery(queryName: string) {
+    return this.http.post(`/queries/${queryName}/execute`, {});
   }
 
   private createGraphLayout<

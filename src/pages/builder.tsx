@@ -33,14 +33,17 @@ import {
   Background,
   BackgroundVariant,
   Handle,
+  Panel,
   Position,
   ReactFlow,
+  useEdgesState,
+  useNodesState,
   type Edge,
   type Node,
   type NodeProps,
   type ReactFlowInstance,
 } from "@xyflow/react";
-import { Table2Icon } from "lucide-react";
+import { SaveIcon, Table2Icon } from "lucide-react";
 import {
   Fragment,
   useCallback,
@@ -53,7 +56,15 @@ import Editor from "@monaco-editor/react";
 import type { ImperativePanelHandle } from "react-resizable-panels";
 import useDebounce from "@hooks/use_debounce";
 import { Button } from "@components/ui/button";
-import { XMarkIcon } from "@heroicons/react/24/solid";
+import { PlayIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@components/ui/tooltip";
+import "@xyflow/react/dist/style.css";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const database: Database = new Database();
 const SIDEPANEL_DEFAULT_WIDTH = 17;
@@ -75,7 +86,7 @@ function TableNode({
       />
       <div
         className={
-          "justify-betwee flex w-full items-center space-x-3 px-1 py-2 font-medium"
+          "flex w-full items-center justify-between space-x-3 px-1 py-2 font-medium"
         }
       >
         <Table2Icon className={"size-5 text-orange-600"} />
@@ -104,13 +115,75 @@ export default function Builder(): JSX.Element {
     TableNodeProperties,
     "table"
   > | null>(null);
-  const [nodes, setNodes] = useState<Array<Node<TableNodeProperties, "table">>>(
+  const [nodes, setNodes] = useNodesState<Node<TableNodeProperties, "table">>(
     [],
   );
-  const [edges, setEdges] = useState<Array<Edge>>([]);
+  const [edges, setEdges] = useEdgesState<Edge>([]);
   const [editorContent, setEditorContent] = useState<string>("");
 
   const debouncedEditorContent = useDebounce(editorContent, 500);
+
+  const schemaRequest = useQuery({
+    queryKey: ["database_schema"],
+    enabled: schema === null,
+    queryFn: async () => {
+      const schemaFetchResult = await database.getDatabaseSchema();
+      if (!schemaFetchResult.ok) {
+        throw new Error("Failed to fetch database schema");
+      }
+      return schemaFetchResult.value.payload;
+    },
+  });
+
+  const queryRequest = useQuery({
+    queryKey: ["fetch_all_identifiers"],
+    refetchOnWindowFocus: false,
+    enabled: Boolean(schema) || schemaRequest.isSuccess,
+    queryFn: async () => {
+      const result = await database.getQuery("fetch_all_identifiers");
+
+      if (result.ok) {
+        return result.value.payload;
+      }
+
+      const databaseSchema = schema ?? schemaRequest.data;
+
+      if (databaseSchema === null || databaseSchema === undefined) {
+        throw new Error("Schema not available to generate graph");
+      }
+
+      const { nodes, edges } = database.generateGraph(databaseSchema, {
+        no_columns: true,
+      });
+
+      return {
+        nodes: nodes,
+        edges: edges,
+        viewport: {
+          x: 0,
+          y: 0,
+          zoom: 1,
+        },
+      };
+    },
+  });
+
+  useEffect(() => {
+    if (schemaRequest.data !== undefined) {
+      dispatch({
+        type: "SET_SCHEMA",
+        payload: { schema: schemaRequest.data },
+      });
+    }
+  }, [schemaRequest.data, dispatch]);
+
+  useEffect(() => {
+    if (queryRequest.data !== undefined) {
+      setNodes(queryRequest.data.nodes);
+      setEdges(queryRequest.data.edges);
+      reactFlowInstance?.setViewport(queryRequest.data.viewport);
+    }
+  }, [queryRequest.data, reactFlowInstance, setEdges, setNodes]);
 
   const nodeClickHandler = useCallback(
     (node: Node<TableNodeProperties, "table">) => {
@@ -129,6 +202,18 @@ export default function Builder(): JSX.Element {
     },
     [],
   );
+
+  const pushQueryHandler = useCallback(async () => {
+    if (reactFlowInstance === null) return;
+
+    const graph = reactFlowInstance.toObject();
+
+    const result = await database.saveQuery("fetch_all_identifiers", graph);
+
+    if (result.ok) {
+      toast("Query Saved.");
+    }
+  }, [reactFlowInstance]);
 
   useEffect(() => {
     if (focusedNode === null) return;
@@ -152,31 +237,7 @@ export default function Builder(): JSX.Element {
         };
       }),
     );
-  }, [debouncedEditorContent, focusedNode]);
-
-  useEffect(() => {
-    if (focusedNode == null) {
-      editorPanelRef.current?.collapse();
-    }
-  }, [focusedNode]);
-
-  useEffect(() => {
-    if (schema !== null) {
-      return;
-    }
-    database.getDatabaseSchema().then((result) => {
-      if (result.ok) {
-        dispatch({
-          type: "SET_SCHEMA",
-          payload: {
-            schema: result.value.payload,
-          },
-        });
-      } else {
-        console.error(result.error);
-      }
-    });
-  });
+  }, [debouncedEditorContent, focusedNode, setNodes]);
 
   useEffect(() => {
     if (queryBuilderContainerRef.current === null || reactFlowInstance === null)
@@ -203,17 +264,6 @@ export default function Builder(): JSX.Element {
     };
   }, [reactFlowInstance]);
 
-  useEffect(() => {
-    if (schema === null) return;
-
-    const graph = database.generateGraph(schema, {
-      no_columns: true,
-    });
-
-    setNodes(graph.nodes);
-    setEdges(graph.edges);
-  }, [schema]);
-
   if (schema === null) {
     return <Fragment />;
   }
@@ -235,7 +285,7 @@ export default function Builder(): JSX.Element {
           >
             <h3>Tables</h3>
           </div>
-          <ScrollArea className={"h-[92.5dvh] w-full px-2 py-3"}>
+          <ScrollArea className={"h-[92.5dvh] w-full px-2 pt-3 pb-20"}>
             {(Object.keys(schema) as string[]).map((table) => (
               <div
                 key={table}
@@ -284,6 +334,56 @@ export default function Builder(): JSX.Element {
               }}
               onNodeClick={(_, node) => nodeClickHandler(node)}
             >
+              <Panel position="top-center">
+                <div
+                  className={
+                    "flex w-32 items-center justify-evenly rounded-lg border bg-white py-1 shadow-md"
+                  }
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild={true}>
+                      <Button
+                        variant={"secondary"}
+                        size={"icon"}
+                        className={"cursor-pointer bg-transparent"}
+                        onClick={async () => {
+                          const result = await database.executeQuery(
+                            "fetch_all_identifiers",
+                          );
+
+                          if (result.ok) {
+                            console.log(result.value.payload);
+                          }else{
+                            console.log(result.error.raw);
+                            
+                          }
+                        }}
+                      >
+                        <PlayIcon className={"size-6 fill-green-600"} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side={"bottom"}>
+                      <p>Run Query</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild={true}>
+                      <Button
+                        variant={"secondary"}
+                        size={"icon"}
+                        className={"cursor-pointer bg-transparent"}
+                        onClick={pushQueryHandler}
+                      >
+                        <SaveIcon className={"size-6 text-orange-600"} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side={"bottom"}>
+                      <p>Save Query</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </Panel>
               <Background variant={BackgroundVariant.Dots} />
             </ReactFlow>
           </div>

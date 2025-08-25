@@ -33,6 +33,7 @@ import RootLayout from "./layouts/root_layout";
 import Builder from "@pages/builder";
 import { ReactFlowProvider } from "@xyflow/react";
 import { DnDProvider } from "./providers/dnd_provider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const router = createBrowserRouter([
   {
@@ -56,15 +57,19 @@ const router = createBrowserRouter([
   },
 ]);
 
+const queryClient = new QueryClient();
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <DatabaseProvider schema={null}>
-      <DnDProvider>
-        <ReactFlowProvider>
-          <Toaster />
-          <RouterProvider router={router}></RouterProvider>
-        </ReactFlowProvider>
-      </DnDProvider>
-    </DatabaseProvider>
+    <QueryClientProvider client={queryClient}>
+      <DatabaseProvider schema={null}>
+        <DnDProvider>
+          <ReactFlowProvider>
+            <Toaster />
+            <RouterProvider router={router}></RouterProvider>
+          </ReactFlowProvider>
+        </DnDProvider>
+      </DatabaseProvider>
+    </QueryClientProvider>
   </StrictMode>,
 );
