@@ -25,6 +25,11 @@ import { Outlet } from "react-router";
 import NavBar from "@components/navbar.tsx";
 
 export default function RootLayout(): JSX.Element {
+  /**
+   * Layout component that provides the main structure for the app.
+   * Includes a navigation bar and renders child routes via Outlet.
+   * @returns The root layout JSX element.
+   */
   return (
     <div className={"flex min-h-dvh flex-col dark"}>
       <NavBar />

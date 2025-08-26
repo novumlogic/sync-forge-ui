@@ -22,13 +22,47 @@
 
 import type ForeignKey from "@dto/foreign_key";
 
+/**
+ * Represents a column in a database table.
+ */
 export default interface TableColumn {
+  /**
+   * The name of the column in the database table.
+   */
   column_name: string;
+
+  /**
+   * The data type of the column (e.g., VARCHAR, INT).
+   */
   data_type: string;
+
+  /**
+   * The default value for the column, if any.
+   */
   column_default: string;
-  is_nullable: string;
-  is_primary_key: string;
-  is_unique: string;
+
+  /**
+   * Indicates if the column allows NULL values ("YES" or "NO").
+   */
+  is_nullable: boolean;
+
+  /**
+   * Indicates if the column is a primary key ("YES" or "NO").
+   */
+  is_primary_key: boolean;
+
+  /**
+   * Indicates if the column has a UNIQUE constraint ("YES" or "NO").
+   */
+  is_unique: boolean;
+
+  /**
+   * List of foreign key constraints associated with the column.
+   */
   foreign_keys: Array<ForeignKey>;
+
+  /**
+   * List of check constraints applied to the column.
+   */
   check_constraints: Array<string>;
 }

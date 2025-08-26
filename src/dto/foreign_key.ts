@@ -20,11 +20,37 @@
  * SOFTWARE.
  */
 
+/**
+ * Represents a foreign key constraint in the database.
+ */
 export default interface ForeignKey {
+  /**
+   * The name of the foreign key constraint.
+   */
   constraint_name: string;
+
+  /**
+   * The namespace (schema) in which the foreign key is defined.
+   */
   namespace: string;
+
+  /**
+   * The name of the referenced table.
+   */
   table_name: string;
+
+  /**
+   * The name of the referenced column in the table.
+   */
   column_name: string;
+
+  /**
+   * The action to perform on delete (e.g., CASCADE, RESTRICT).
+   */
   on_delete: string;
+
+  /**
+   * The action to perform on update (e.g., CASCADE, RESTRICT).
+   */
   on_update: string;
 }

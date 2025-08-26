@@ -24,6 +24,11 @@ import { useContext } from "react";
 import { DatabaseContext } from "@providers/database_provider";
 
 const useDatabase = () => {
+  /**
+   * Accesses the database context provided by DatabaseProvider.
+   * Throws an error if used outside of the provider.
+   * @returns The database context value.
+   */
   const context = useContext(DatabaseContext);
   if (!context) {
     throw new Error(

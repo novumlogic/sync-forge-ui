@@ -24,6 +24,11 @@ import { DnDContext } from "@providers/dnd_provider";
 import { useContext } from "react";
 
 const useDnD = () => {
+  /**
+   * Accesses the drag-and-drop context provided by DnDProvider.
+   * Throws an error if used outside of the provider.
+   * @returns The drag-and-drop context value.
+   */
   const context = useContext(DnDContext);
   if (!context) {
     throw new Error("useDnD Hook must be used within the DnD Provider");

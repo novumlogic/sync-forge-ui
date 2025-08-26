@@ -22,4 +22,7 @@
 
 import type TableColumn from "@dto/table_column";
 
+/**
+ * Represents the database schema, mapping table names to their columns.
+ */
 export type DatabaseSchema = Record<string, Array<TableColumn>>;

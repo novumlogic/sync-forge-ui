@@ -21,5 +21,8 @@
  */
 
 export default interface RouteHandle {
+  /**
+   * Optional title for the route, used for display or identification.
+   */
   title?: string;
 }

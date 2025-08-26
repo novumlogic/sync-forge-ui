@@ -22,21 +22,54 @@
 
 import type TableColumn from "@dto/table_column";
 
+/**
+ * Represents the generic properties of a node in the graph.
+ */
 type GenericNodeProperties = {
+  /**
+   * Unique identifier for the node.
+   */
   id: string;
+
+  /**
+   * Display name of the node.
+   */
   name: string;
+
+  /**
+   * Additional properties or metadata for the node.
+   */
   extras: Record<string, unknown>;
 };
 
+/**
+ * Represents the properties of a table node in the graph.
+ */
 type TableNodeProperties = {
+  /**
+   * The type of node, always "table" for table nodes.
+   */
   type: "table";
+
+  /**
+   * The columns belonging to the table node.
+   */
   columns: Array<TableColumn>;
 } & GenericNodeProperties;
 
+/**
+ * Represents the properties of a filter node in the graph.
+ */
 type FilterNodeProperties = {
+  /**
+   * The type of node, always "filter" for filter nodes.
+   */
   type: "filter";
 } & GenericNodeProperties;
 
+/**
+ * Represents the properties of a node in the graph.
+ */
 type NodeProperties = TableNodeProperties | FilterNodeProperties;
 
 export type { NodeProperties, TableNodeProperties, FilterNodeProperties };

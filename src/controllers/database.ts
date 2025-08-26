@@ -37,6 +37,9 @@ import { API_BASE_URL } from "@constants";
 import type { TableNodeProperties } from "@type/node_properties";
 import type { Result } from "@lib/result";
 
+/**
+ * Represents the database controller, handling database-related operations.
+ */
 export default class Database {
   private http: HttpService;
   private NODE_BUFFER_X = 32;
@@ -46,12 +49,20 @@ export default class Database {
     this.http = new HttpService(API_BASE_URL);
   }
 
+  /**
+   * Fetches the database schema.
+   * @returns A promise resolving to the database schema.
+   */
   public async getDatabaseSchema() {
     return this.http.get<Record<string, Array<TableColumn>>>(
       "/database-schema",
     );
   }
 
+  /**
+   * Downloads the SQLite database.
+   * @returns A promise resolving to the downloaded database file.
+   */
   public async downloadDatabase(): Promise<
     Result<HttpSuccess<ArrayBuffer>, HttpError>
   > {
@@ -61,6 +72,12 @@ export default class Database {
     });
   }
 
+  /**
+   * Generates a graph representation of the database schema.
+   * @param schema The database schema to represent.
+   * @param options Options for graph generation.
+   * @returns The generated graph.
+   */
   public generateGraph(
     schema: DatabaseSchema,
     options?: {
@@ -117,6 +134,11 @@ export default class Database {
     );
   }
 
+  /**
+   * Fetches a saved query by name.
+   * @param queryName The name of the query to fetch.
+   * @returns A promise resolving to the fetched query.
+   */
   public async getQuery(
     queryName: string,
   ): Promise<
@@ -132,6 +154,12 @@ export default class Database {
     >(`/queries/${queryName}`);
   }
 
+  /**
+   * Saves a query by name.
+   * @param queryName The name of the query to save.
+   * @param graph The graph representation of the query.
+   * @returns A promise resolving to the result of the save operation.
+   */
   public async saveQuery(
     queryName: string,
     graph: ReactFlowJsonObject<Node<TableNodeProperties, "table">, Edge>,
@@ -141,10 +169,22 @@ export default class Database {
     });
   }
 
+  /**
+   * Executes a saved query by name.
+   * @param queryName The name of the query to execute.
+   * @returns A promise resolving to the result of the execution.
+   */
   public async executeQuery(queryName: string) {
     return this.http.post(`/queries/${queryName}/execute`, {});
   }
 
+  /**
+   * Creates a layout for the graph.
+   * @param nodes The nodes in the graph.
+   * @param edges The edges in the graph.
+   * @param direction The direction of the layout.
+   * @returns The layout information.
+   */
   private createGraphLayout<
     D extends TableNodeProperties,
     T extends string | undefined = string,
@@ -198,6 +238,11 @@ export default class Database {
     return { nodes: outNodes, edges: [...edges] };
   }
 
+  /**
+   * Calculates the size of a table node.
+   * @param cols The columns in the table.
+   * @returns The size of the table node.
+   */
   private tableNodeSize(cols: ReadonlyArray<TableColumn>): {
     width: number;
     height: number;
