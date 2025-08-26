@@ -75,28 +75,28 @@ function TableNode({
   return (
     <div
       className={
-        "flex items-center rounded-lg border border-primary bg-primary-foreground"
+        "border-primary bg-primary-foreground flex items-center rounded-lg border"
       }
     >
       <Handle
         type="target"
         id={`${data.id}-target`}
         position={Position.Left}
-        className={"!static !left-0 mt-2 !block !size-2.5 !bg-primary"}
+        className={"!bg-primary !static !left-0 mt-2 !block !size-2.5"}
       />
       <div
         className={
           "flex w-full items-center justify-between space-x-3 px-1 py-2 font-medium"
         }
       >
-        <Table2Icon className={"size-5 text-primary"} />
+        <Table2Icon className={"text-primary size-5"} />
         <span className={"block"}>{String(data.name)}</span>
       </div>
       <Handle
         type="source"
         id={`${data.id}-source`}
         position={Position.Right}
-        className={"!static !right-0 mt-2 !block !size-2.5 !bg-primary"}
+        className={"!bg-primary !static !right-0 mt-2 !block !size-2.5"}
       />
     </div>
   );
@@ -209,9 +209,14 @@ export default function Builder(): JSX.Element {
     const graph = reactFlowInstance.toObject();
 
     const result = await database.saveQuery("fetch_all_identifiers", graph);
+    console.log(result);
 
     if (result.ok) {
       toast("Query Saved.");
+    } else {
+      toast(
+        `Query failed: ${String((result.error.raw as { error: string; status_code: string }).error)}`,
+      );
     }
   }, [reactFlowInstance]);
 
@@ -280,12 +285,16 @@ export default function Builder(): JSX.Element {
         >
           <div
             className={
-              "flex w-full items-center justify-start px-3 pt-5 pb-3 font-bold bg-background text-foreground"
+              "bg-background text-foreground flex w-full items-center justify-start px-3 pt-5 pb-3 font-bold"
             }
           >
             <h3>Tables</h3>
           </div>
-          <ScrollArea className={"h-[92.5dvh] w-full px-2 pt-3 pb-20 bg-background text-foreground"}>
+          <ScrollArea
+            className={
+              "bg-background text-foreground h-[92.5dvh] w-full px-2 pt-3 pb-20"
+            }
+          >
             {(Object.keys(schema) as string[]).map((table) => (
               <div
                 key={table}
@@ -305,7 +314,7 @@ export default function Builder(): JSX.Element {
                   });
                 }}
               >
-                <Table2Icon className={"size-5 text-primary"} />
+                <Table2Icon className={"text-primary size-5"} />
                 <span className={"block text-xs"}>{table}</span>
               </div>
             ))}
@@ -337,7 +346,7 @@ export default function Builder(): JSX.Element {
               <Panel position="top-center">
                 <div
                   className={
-                    "flex w-32 items-center justify-evenly rounded-lg border border-border bg-background py-1 shadow-md"
+                    "border-border bg-background flex w-32 items-center justify-evenly rounded-lg border py-1 shadow-md"
                   }
                 >
                   <Tooltip>
@@ -352,10 +361,11 @@ export default function Builder(): JSX.Element {
                           );
 
                           if (result.ok) {
-                            console.log(result.value.payload);
-                          }else{
-                            console.log(result.error.raw);
-                            
+                            toast("Query executed successfully.");
+                          } else {
+                            toast(
+                              `Query failed: ${String((result.error.raw as { error: string; status_code: string }).error)}`,
+                            );
                           }
                         }}
                       >
@@ -384,11 +394,14 @@ export default function Builder(): JSX.Element {
                   </Tooltip>
                 </div>
               </Panel>
-              <Background variant={BackgroundVariant.Dots} bgColor="#171717"/>
+              <Background variant={BackgroundVariant.Dots} bgColor="#171717" />
             </ReactFlow>
           </div>
         </ResizablePanel>
-        <ResizableHandle hidden={focusedNode === null} className={"bg-border"}/>
+        <ResizableHandle
+          hidden={focusedNode === null}
+          className={"bg-border"}
+        />
         <ResizablePanel
           order={2}
           defaultSize={0}
@@ -397,10 +410,10 @@ export default function Builder(): JSX.Element {
           collapsible={true}
           ref={editorPanelRef}
         >
-          <div className={"h-full w-full bg-stone-900 text-foreground"}>
+          <div className={"text-foreground h-full w-full bg-stone-900"}>
             <div className={"flex items-center justify-between px-3 py-4"}>
               <div className={"flex items-center space-x-2"}>
-                <Table2Icon className={"size-5 text-primary"} />
+                <Table2Icon className={"text-primary size-5"} />
                 <h5 className={"font-mono font-medium"}>
                   {String(focusedNode?.data.name)}
                 </h5>
@@ -418,7 +431,7 @@ export default function Builder(): JSX.Element {
               </Button>
             </div>
             <Editor
-              className={"h-full w-ful"}
+              className={"w-ful h-full"}
               theme={"vs-dark"}
               defaultLanguage={"sql"}
               value={editorContent}
