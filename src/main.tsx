@@ -47,8 +47,8 @@ const router = createBrowserRouter([
         } satisfies RouteHandle,
       },
       {
-        path: "/builder",
-        element: <Builder />,
+        path: "/builder/:builderId",
+        Component: Builder,
         handle: {
           title: "Query Builder",
         } satisfies RouteHandle,

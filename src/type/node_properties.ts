@@ -21,55 +21,80 @@
  */
 
 import type TableColumn from "@dto/table_column";
+import type { Node } from "@xyflow/react";
 
-/**
- * Represents the generic properties of a node in the graph.
- */
-type GenericNodeProperties = {
-  /**
-   * Unique identifier for the node.
-   */
-  id: string;
-
-  /**
-   * Display name of the node.
-   */
-  name: string;
-
-  /**
-   * Additional properties or metadata for the node.
-   */
-  extras: Record<string, unknown>;
+export type SqlFilter<Columns extends string> = {
+  clause: "AND" | "OR";
+  on: {
+    column: Columns;
+    operator: "equals" | "not_equals" | "in" | "not_in" | "like";
+    value: string | number | boolean | Array<string | number | boolean>;
+  };
 };
 
-/**
- * Represents the properties of a table node in the graph.
- */
-type TableNodeProperties = {
-  /**
-   * The type of node, always "table" for table nodes.
-   */
-  type: "table";
+export type SelectNodeProperties<
+  SelectedColumns extends Record<string, { selected: boolean }>,
+> = {
+  id: string;
+  table: string;
+  columns: SelectedColumns;
+  filters: Array<SqlFilter<Extract<keyof SelectedColumns, string>>>;
+  features: {
+    allow_self_connection: boolean;
+  };
+};
 
-  /**
-   * The columns belonging to the table node.
-   */
+export function createSelectNode<
+  SelectColumns extends Record<string, { selected: boolean }>,
+>(
+  node: Omit<Node<SelectNodeProperties<SelectColumns>>, "type"> & { type: "select" },
+) {
+  return node as Node<SelectNodeProperties<SelectColumns>> & { type: "select" };
+}
+
+export function isSelectNode(node: BuilderNode): node is Node<
+  SelectNodeProperties<Record<string, { selected: boolean }>>
+> & {
+  type: "select";
+} {
+  return node.type === "select";
+}
+
+export type TableNodeProperties = {
+  id:string;
+  name: string;
+  show_details:boolean;
   columns: Array<TableColumn>;
-} & GenericNodeProperties;
+};
 
-/**
- * Represents the properties of a filter node in the graph.
- */
-type FilterNodeProperties = {
-  /**
-   * The type of node, always "filter" for filter nodes.
-   */
-  type: "filter";
-} & GenericNodeProperties;
+export function createTableNode(
+  node: Omit<Node<TableNodeProperties>, "type"> & { type: "table" },
+) {
+  return node as Node<TableNodeProperties> & { type: "table" };
+}
 
-/**
- * Represents the properties of a node in the graph.
- */
-type NodeProperties = TableNodeProperties | FilterNodeProperties;
+export function isTableNode(
+  node: BuilderNode,
+): node is Node<TableNodeProperties> & { type: "table" } {
+  return node.type === "table";
+}
 
-export type { NodeProperties, TableNodeProperties, FilterNodeProperties };
+export interface NodeProperties<
+  SC extends Record<string, { selected: boolean }> = Record<
+    string,
+    { selected: boolean }
+  >,
+> {
+  table: TableNodeProperties;
+  select: SelectNodeProperties<SC>;
+}
+
+export type BuilderNode<
+  SC extends Record<string, { selected: boolean }> = Record<
+    string,
+    { selected: boolean }
+  >,
+  K extends keyof NodeProperties<SC> = keyof NodeProperties<SC>,
+> = {
+  [T in K]: Node<NodeProperties<SC>[T]> & { type: T };
+}[K];

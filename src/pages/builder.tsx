@@ -27,20 +27,16 @@ import {
 } from "@components/ui/resizable";
 import { ScrollArea } from "@components/ui/scroll_area";
 import Database from "@controllers/database";
-import { type TableNodeProperties } from "@type/node_properties";
+import { type BuilderNode } from "@type/node_properties";
 import useDatabase from "@hooks/use_database";
 import {
   Background,
   BackgroundVariant,
-  Handle,
   Panel,
-  Position,
   ReactFlow,
   useEdgesState,
   useNodesState,
   type Edge,
-  type Node,
-  type NodeProps,
   type ReactFlowInstance,
 } from "@xyflow/react";
 import { SaveIcon, Table2Icon } from "lucide-react";
@@ -52,11 +48,9 @@ import {
   useState,
   type JSX,
 } from "react";
-import Editor from "@monaco-editor/react";
 import type { ImperativePanelHandle } from "react-resizable-panels";
-import useDebounce from "@hooks/use_debounce";
 import { Button } from "@components/ui/button";
-import { PlayIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { PlayIcon } from "@heroicons/react/24/solid";
 import {
   Tooltip,
   TooltipTrigger,
@@ -65,63 +59,24 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useParams } from "react-router";
+import TableNode from "@components/table_node";
 
 const database: Database = new Database();
 const SIDEPANEL_DEFAULT_WIDTH = 17;
 
-function TableNode({
-  data,
-}: NodeProps<Node<TableNodeProperties>>): JSX.Element {
-  return (
-    <div
-      className={
-        "border-primary bg-primary-foreground flex items-center rounded-lg border"
-      }
-    >
-      <Handle
-        type="target"
-        id={`${data.id}-target`}
-        position={Position.Left}
-        className={"!bg-primary !static !left-0 mt-2 !block !size-2.5"}
-      />
-      <div
-        className={
-          "flex w-full items-center justify-between space-x-3 px-1 py-2 font-medium"
-        }
-      >
-        <Table2Icon className={"text-primary size-5"} />
-        <span className={"block"}>{String(data.name)}</span>
-      </div>
-      <Handle
-        type="source"
-        id={`${data.id}-source`}
-        position={Position.Right}
-        className={"!bg-primary !static !right-0 mt-2 !block !size-2.5"}
-      />
-    </div>
-  );
-}
-
 export default function Builder(): JSX.Element {
   const { schema, dispatch } = useDatabase();
+  const { builderId } = useParams<{ builderId: string }>();
 
   const queryBuilderContainerRef = useRef<HTMLDivElement | null>(null);
-  const editorPanelRef = useRef<ImperativePanelHandle>(null);
+  const filterPanelRef = useRef<ImperativePanelHandle>(null);
 
-  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<
-    Node<TableNodeProperties, "table">
-  > | null>(null);
-  const [focusedNode, setFocusedNode] = useState<Node<
-    TableNodeProperties,
-    "table"
-  > | null>(null);
-  const [nodes, setNodes] = useNodesState<Node<TableNodeProperties, "table">>(
-    [],
-  );
+  const [reactFlowInstance, setReactFlowInstance] =
+    useState<ReactFlowInstance<BuilderNode> | null>(null);
+  const [focusedNode, setFocusedNode] = useState<BuilderNode | null>(null);
+  const [nodes, setNodes] = useNodesState<BuilderNode>([]);
   const [edges, setEdges] = useEdgesState<Edge>([]);
-  const [editorContent, setEditorContent] = useState<string>("");
-
-  const debouncedEditorContent = useDebounce(editorContent, 500);
 
   const schemaRequest = useQuery({
     queryKey: ["database_schema"],
@@ -136,29 +91,23 @@ export default function Builder(): JSX.Element {
   });
 
   const queryRequest = useQuery({
-    queryKey: ["fetch_all_identifiers"],
+    queryKey: [builderId],
     refetchOnWindowFocus: false,
     enabled: Boolean(schema) || schemaRequest.isSuccess,
     queryFn: async () => {
-      const result = await database.getQuery("fetch_all_identifiers");
+      if (builderId === undefined) {
+        throw new Error("Builder ID is required");
+      }
+
+      const result = await database.getQuery(builderId);
 
       if (result.ok) {
         return result.value.payload;
       }
 
-      const databaseSchema = schema ?? schemaRequest.data;
-
-      if (databaseSchema === null || databaseSchema === undefined) {
-        throw new Error("Schema not available to generate graph");
-      }
-
-      const { nodes, edges } = database.generateGraph(databaseSchema, {
-        no_columns: true,
-      });
-
       return {
-        nodes: nodes,
-        edges: edges,
+        nodes: [],
+        edges: [],
         viewport: {
           x: 0,
           y: 0,
@@ -185,32 +134,20 @@ export default function Builder(): JSX.Element {
     }
   }, [queryRequest.data, reactFlowInstance, setEdges, setNodes]);
 
-  const nodeClickHandler = useCallback(
-    (node: Node<TableNodeProperties, "table">) => {
-      setFocusedNode(node);
+  const nodeClickHandler = useCallback((node: BuilderNode) => {
+    setFocusedNode(node);
 
-      const query =
-        "query" in node.data.extras
-          ? String((node.data.extras as { query?: string }).query ?? "")
-          : "";
-
-      setEditorContent(query);
-
-      if (!editorPanelRef.current?.isExpanded()) {
-        editorPanelRef.current?.expand(2 * SIDEPANEL_DEFAULT_WIDTH);
-      }
-    },
-    [],
-  );
+    if (!filterPanelRef.current?.isExpanded()) {
+      filterPanelRef.current?.expand(2 * SIDEPANEL_DEFAULT_WIDTH);
+    }
+  }, []);
 
   const pushQueryHandler = useCallback(async () => {
-    if (reactFlowInstance === null) return;
+    if (reactFlowInstance === null || builderId === undefined) return;
 
     const graph = reactFlowInstance.toObject();
 
-    const result = await database.saveQuery("fetch_all_identifiers", graph);
-    console.log(result);
-
+    const result = await database.saveQuery(builderId, graph);
     if (result.ok) {
       toast("Query Saved.");
     } else {
@@ -218,31 +155,7 @@ export default function Builder(): JSX.Element {
         `Query failed: ${String((result.error.raw as { error: string; status_code: string }).error)}`,
       );
     }
-  }, [reactFlowInstance]);
-
-  useEffect(() => {
-    if (focusedNode === null) return;
-
-    setNodes((previousNodes) =>
-      previousNodes.map((node) => {
-        if (node.id !== focusedNode.id) return node;
-
-        const prevExtras = node.data.extras;
-        const newData = {
-          ...node.data,
-          extras: {
-            ...prevExtras,
-            query: debouncedEditorContent,
-          },
-        };
-
-        return {
-          ...node,
-          data: newData,
-        };
-      }),
-    );
-  }, [debouncedEditorContent, focusedNode, setNodes]);
+  }, [builderId, reactFlowInstance]);
 
   useEffect(() => {
     if (queryBuilderContainerRef.current === null || reactFlowInstance === null)
@@ -406,44 +319,10 @@ export default function Builder(): JSX.Element {
           order={2}
           defaultSize={0}
           className={"h-full"}
-          maxSize={4 * SIDEPANEL_DEFAULT_WIDTH}
+          maxSize={SIDEPANEL_DEFAULT_WIDTH}
           collapsible={true}
-          ref={editorPanelRef}
-        >
-          <div className={"text-foreground h-full w-full bg-stone-900"}>
-            <div className={"flex items-center justify-between px-3 py-4"}>
-              <div className={"flex items-center space-x-2"}>
-                <Table2Icon className={"text-primary size-5"} />
-                <h5 className={"font-mono font-medium"}>
-                  {String(focusedNode?.data.name)}
-                </h5>
-              </div>
-              <Button
-                size={"icon"}
-                variant={"secondary"}
-                className={"cursor-pointer bg-transparent"}
-                onClick={() => {
-                  setFocusedNode(null);
-                  editorPanelRef.current?.collapse();
-                }}
-              >
-                <XMarkIcon />
-              </Button>
-            </div>
-            <Editor
-              className={"w-ful h-full"}
-              theme={"vs-dark"}
-              defaultLanguage={"sql"}
-              value={editorContent}
-              options={{
-                minimap: {
-                  enabled: false,
-                },
-              }}
-              onChange={(value) => setEditorContent(value ?? "")}
-            />
-          </div>
-        </ResizablePanel>
+          ref={filterPanelRef}
+        ></ResizablePanel>
       </ResizablePanelGroup>
     </div>
   );

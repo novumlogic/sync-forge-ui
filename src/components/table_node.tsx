@@ -30,9 +30,9 @@ import type { TableNodeProperties } from "@type/node_properties";
 export default function TableNode({
   data,
 }: NodeProps<Node<TableNodeProperties>>): JSX.Element {
-  return (
-    <div className="rounded-lg border bg-primary-foreground">
-      <div className="bg-primary flex items-center space-x-1 rounded-t-md px-2 py-3 font-semibold text-foreground">
+  return data.show_details ? (
+    <div className="bg-primary-foreground rounded-lg border">
+      <div className="bg-primary text-foreground flex items-center space-x-1 rounded-t-md px-2 py-3 font-semibold">
         <Table2Icon className={"size-6"} />
         <h5>{data.name}</h5>
       </div>
@@ -82,6 +82,33 @@ export default function TableNode({
           </div>
         ))}
       </div>
+    </div>
+  ) : (
+    <div
+      className={
+        "border-primary bg-primary-foreground flex items-center rounded-lg border"
+      }
+    >
+      <Handle
+        type="target"
+        id={`${data.id}-target`}
+        position={Position.Left}
+        className={"!bg-primary !static !left-0 mt-2 !block !size-2.5"}
+      />
+      <div
+        className={
+          "flex w-full items-center justify-between space-x-3 px-1 py-2 font-medium"
+        }
+      >
+        <Table2Icon className={"text-primary size-5"} />
+        <span className={"block"}>{String(data.name)}</span>
+      </div>
+      <Handle
+        type="source"
+        id={`${data.id}-source`}
+        position={Position.Right}
+        className={"!bg-primary !static !right-0 mt-2 !block !size-2.5"}
+      />
     </div>
   );
 }

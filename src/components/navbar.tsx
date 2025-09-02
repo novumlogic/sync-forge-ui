@@ -45,17 +45,21 @@ export default function Navbar(): JSX.Element {
 
   return (
     <header
-      className={`fixed z-50 flex h-18 w-full items-center justify-between border-b border-b-border bg-stone-900 text-foreground px-3 backdrop-blur-3xl md:px-16`}
+      className={`border-b-border text-foreground fixed z-50 flex h-18 w-full items-center justify-between border-b bg-stone-900 px-3 backdrop-blur-3xl md:px-16`}
     >
       <div className="flex items-center">
         <h1 className="text-xl font-bold">{title}</h1>
       </div>
-      <div className={"fles space-x-3"}>
-        <Link to={location.pathname === "/" ? "/builder" : "/"}>
+      <div className={"flex space-x-3"}>
+        <Link
+          to={
+            location.pathname === "/" ? "/builder/fetch_all_identifiers" : "/"
+          }
+        >
           <Button variant={"outline"} className={"cursor-pointer"}>
-            <div className={"h-4 w-0"}/>
+            <div className={"h-4 w-0"} />
             <span className={"block"}>
-              {location.pathname === "/builder"
+              {location.pathname.includes("/builder")
                 ? "Database Schema"
                 : "Query Builder"}
             </span>
@@ -92,7 +96,7 @@ export default function Navbar(): JSX.Element {
             });
           }}
         >
-          <ArrowDownTrayIcon className={"size-4 inline-block"} />
+          <ArrowDownTrayIcon className={"inline-block size-4"} />
           <span className={"block"}>Download DB</span>
         </Button>
       </div>
