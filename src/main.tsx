@@ -62,7 +62,10 @@ const queryClient = new QueryClient();
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <DatabaseProvider schema={null}>
+      <DatabaseProvider store={{
+        schema: null,
+        graph: null,
+      }}>
         <DnDProvider>
           <ReactFlowProvider>
             <Toaster />

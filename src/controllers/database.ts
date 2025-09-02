@@ -34,7 +34,10 @@ import {
 import type { DatabaseSchema } from "@type/database_schema";
 import dagre from "@dagrejs/dagre";
 import { API_BASE_URL } from "@constants";
-import type { TableNodeProperties } from "@type/node_properties";
+import type {
+  NodeProperties,
+  TableNodeProperties,
+} from "@type/node_properties";
 import type { Result } from "@lib/result";
 
 /**
@@ -162,7 +165,7 @@ export default class Database {
    */
   public async saveQuery(
     queryName: string,
-    graph: ReactFlowJsonObject<Node<TableNodeProperties, "table">, Edge>,
+    graph: ReactFlowJsonObject<Node<NodeProperties>, Edge>,
   ): Promise<Result<HttpSuccess<Record<string, unknown>>, HttpError>> {
     return this.http.post<Record<string, unknown>>(`/queries/${queryName}`, {
       ...graph,

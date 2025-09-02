@@ -27,6 +27,7 @@ import {
   useReducer,
 } from "react";
 import type { DatabaseSchema } from "@type/database_schema";
+import { DependencyGraph } from "@lib/dependency_graph";
 
 export type DatabaseAction = {
   type: "SET_SCHEMA";
@@ -35,45 +36,64 @@ export type DatabaseAction = {
   };
 };
 
-const authReducer = (
-  schema: DatabaseSchema | null = null,
+const databaseReducer = (
+  state: {
+    schema: DatabaseSchema | null;
+    graph: DependencyGraph | null;
+  },
   action: DatabaseAction,
-): DatabaseSchema | null => {
+): {
+  schema: DatabaseSchema | null;
+  graph: DependencyGraph | null;
+} => {
   switch (action.type) {
     case "SET_SCHEMA": {
       return {
-        ...action.payload.schema,
+        schema: action.payload.schema,
+        graph: new DependencyGraph(action.payload.schema),
       };
     }
     default: {
-      return schema;
+      return state;
     }
   }
 };
 
 export const DatabaseContext = createContext<{
-  schema: DatabaseSchema | null;
+  store: {
+    schema: DatabaseSchema | null;
+    graph: DependencyGraph | null;
+  };
   dispatch: Dispatch<DatabaseAction>;
 }>({
-  schema: null,
+  store: {
+    schema: null,
+    graph: null,
+  },
   dispatch: () => undefined,
 });
 
-export interface AuthProviderProps {
+export interface DatabaseProviderProps {
   children: ReactNode;
-  schema: DatabaseSchema | null;
+  store: {
+    schema: DatabaseSchema | null;
+    graph: DependencyGraph | null;
+  };
 }
 
 const DatabaseProvider = ({
   children,
-  schema,
-}: Readonly<AuthProviderProps>) => {
-  const [state, dispatch] = useReducer(authReducer, schema);
+  store: { schema, graph },
+}: Readonly<DatabaseProviderProps>) => {
+  const [state, dispatch] = useReducer(databaseReducer, {
+    schema,
+    graph,
+  });
 
   return (
     <DatabaseContext.Provider
       value={{
-        schema: state,
+        store: state,
         dispatch: dispatch,
       }}
     >
