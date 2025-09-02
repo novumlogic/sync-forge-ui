@@ -34,7 +34,7 @@ export default function TableNode({
     <div className="bg-primary-foreground rounded-lg border">
       <div className="bg-primary text-foreground flex items-center space-x-1 rounded-t-md px-2 py-3 font-semibold">
         <Table2Icon className={"size-6"} />
-        <h5>{data.name}</h5>
+        <h5>{data.display_name}</h5>
       </div>
       <div className="flex flex-col gap-y-2 pt-4 pb-2">
         {data.columns.map((c) => (
@@ -44,7 +44,7 @@ export default function TableNode({
           >
             <Handle
               type="target"
-              id={`${data.name}.${c.column_name}-target`}
+              id={`${data.display_name}.${c.column_name}-target`}
               position={Position.Left}
               className={"invisible !static !left-0 mt-1 !block"}
             />
@@ -75,7 +75,7 @@ export default function TableNode({
             </div>
             <Handle
               type="source"
-              id={`${data.name}.${c.column_name}-source`}
+              id={`${data.display_name}.${c.column_name}-source`}
               position={Position.Right}
               className={"invisible !static !right-0 mt-1 !block"}
             />
@@ -101,7 +101,7 @@ export default function TableNode({
         }
       >
         <Table2Icon className={"text-primary size-5"} />
-        <span className={"block"}>{String(data.name)}</span>
+        <span className={"block"}>{String(data.display_name)}</span>
       </div>
       <Handle
         type="source"

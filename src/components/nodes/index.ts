@@ -20,22 +20,5 @@
  * SOFTWARE.
  */
 
-import { createContext, useState, type ReactNode } from "react";
-import type { DragNodePayload } from "@type/node_properties";
-
-export const DnDContext = createContext<
-  [DragNodePayload | null, (payload: DragNodePayload | null) => void]
->([null, () => {}]);
-
-interface DnDProviderProps {
-  children: ReactNode;
-}
-export function DnDProvider({ children }: Readonly<DnDProviderProps>) {
-  const [payload, setPayload] = useState<DragNodePayload | null>(null);
-
-  return (
-    <DnDContext.Provider value={[payload, setPayload]}>
-      {children}
-    </DnDContext.Provider>
-  );
-}
+export {default as SelectNode} from "./select"
+export {default as TableNode} from "./table"

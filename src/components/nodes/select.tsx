@@ -20,22 +20,44 @@
  * SOFTWARE.
  */
 
-import { createContext, useState, type ReactNode } from "react";
-import type { DragNodePayload } from "@type/node_properties";
+import type { SelectNodeProperties } from "@type/node_properties";
+import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
+import { FilterIcon } from "lucide-react";
+import type { JSX } from "react";
 
-export const DnDContext = createContext<
-  [DragNodePayload | null, (payload: DragNodePayload | null) => void]
->([null, () => {}]);
-
-interface DnDProviderProps {
-  children: ReactNode;
-}
-export function DnDProvider({ children }: Readonly<DnDProviderProps>) {
-  const [payload, setPayload] = useState<DragNodePayload | null>(null);
-
+export default function SelectNode({
+  data,
+}: NodeProps<
+  Node<SelectNodeProperties>
+>): JSX.Element {
   return (
-    <DnDContext.Provider value={[payload, setPayload]}>
-      {children}
-    </DnDContext.Provider>
+    <div
+      className={
+        "flex items-center rounded-lg border border-purple-600 bg-purple-100"
+      }
+    >
+      <Handle
+        type="target"
+        id={`${data.id}-target`}
+        position={Position.Left}
+        className={"!static !left-0 mt-2 !block !size-2.5 !bg-purple-600"}
+      />
+      <div
+        className={
+          "justify-betwee flex w-full items-center space-x-3 px-1 py-2 font-medium"
+        }
+      >
+        <FilterIcon className={"size-5 text-purple-600"} />
+        <span className={"block"}>{String(data.type)}</span>
+      </div>
+      <Handle
+        type="source"
+        id={`${data.id}-source`}
+        position={Position.Right}
+        className={"!static !right-0 mt-2 !block !size-2.5 !bg-purple-600"}
+      />
+    </div>
   );
 }
+
+

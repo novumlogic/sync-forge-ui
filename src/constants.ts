@@ -20,5 +20,25 @@
  * SOFTWARE.
  */
 
+import { SelectNodePropertiesPanel } from "@components/panels";
+import type { FilterDefinition } from "@type/node_properties";
+
+export const SIDEPANEL_DEFAULT_WIDTH = 17;
+
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "__API_BASE_URL__";
+
+export const FILTERS: Array<FilterDefinition> = [
+  {
+    id: "<FILTER_ID>",
+    type: "select",
+    display_name: "select",
+    table: "",
+    columns: {},
+    filters: [],
+    features: {
+      allow_self_connection: false,
+    },
+    panelComponent: SelectNodePropertiesPanel,
+  },
+];

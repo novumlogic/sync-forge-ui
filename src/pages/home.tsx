@@ -25,7 +25,7 @@ import Database from "@controllers/database";
 import useDatabase from "@hooks/use_database";
 import { Background, BackgroundVariant, ReactFlow } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import TableNode from "@components/table_node";
+import {TableNode} from "@components/nodes";
 import { KeyIcon } from "@heroicons/react/24/solid";
 import { FingerPrintIcon } from "@heroicons/react/24/outline";
 

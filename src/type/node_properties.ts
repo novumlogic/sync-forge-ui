@@ -22,6 +22,7 @@
 
 import type TableColumn from "@dto/table_column";
 import type { Node } from "@xyflow/react";
+import type { ReactNode } from "react";
 
 export type SqlFilter<Columns extends string> = {
   clause: "AND" | "OR";
@@ -32,69 +33,58 @@ export type SqlFilter<Columns extends string> = {
   };
 };
 
+type ColumnsToSelected<T extends readonly string[]> = {
+  [K in T[number]]: { selected: boolean };
+};
+
 export type SelectNodeProperties<
-  SelectedColumns extends Record<string, { selected: boolean }>,
+  Cols extends readonly string[] = string[]
 > = {
+  type: "select";
   id: string;
   table: string;
-  columns: SelectedColumns;
-  filters: Array<SqlFilter<Extract<keyof SelectedColumns, string>>>;
+  display_name: string;
+  columns: ColumnsToSelected<Cols>;
+  filters: Array<SqlFilter<Cols[number]>>;
   features: {
     allow_self_connection: boolean;
   };
 };
 
-export function createSelectNode<
-  SelectColumns extends Record<string, { selected: boolean }>,
->(
-  node: Omit<Node<SelectNodeProperties<SelectColumns>>, "type"> & { type: "select" },
-) {
-  return node as Node<SelectNodeProperties<SelectColumns>> & { type: "select" };
-}
-
-export function isSelectNode(node: BuilderNode): node is Node<
-  SelectNodeProperties<Record<string, { selected: boolean }>>
-> & {
-  type: "select";
-} {
-  return node.type === "select";
-}
-
 export type TableNodeProperties = {
-  id:string;
-  name: string;
-  show_details:boolean;
+  type: "table";
+  id: string;
+  display_name: string;
+  show_details: boolean;
   columns: Array<TableColumn>;
 };
 
-export function createTableNode(
-  node: Omit<Node<TableNodeProperties>, "type"> & { type: "table" },
-) {
-  return node as Node<TableNodeProperties> & { type: "table" };
-}
-
-export function isTableNode(
-  node: BuilderNode,
-): node is Node<TableNodeProperties> & { type: "table" } {
-  return node.type === "table";
-}
-
-export interface NodeProperties<
-  SC extends Record<string, { selected: boolean }> = Record<
-    string,
-    { selected: boolean }
-  >,
-> {
+export interface NodePropertiesMap {
   table: TableNodeProperties;
-  select: SelectNodeProperties<SC>;
+  select: SelectNodeProperties;
 }
 
-export type BuilderNode<
-  SC extends Record<string, { selected: boolean }> = Record<
-    string,
-    { selected: boolean }
-  >,
-  K extends keyof NodeProperties<SC> = keyof NodeProperties<SC>,
+export type AnyNodeProps = NodePropertiesMap[keyof NodePropertiesMap];
+
+export type NodeProperties<K extends keyof NodePropertiesMap> =
+  NodePropertiesMap[K];
+
+export type BuilderNode = {
+  [K in keyof NodePropertiesMap]: Node<NodePropertiesMap[K]>;
+}[keyof NodePropertiesMap];
+
+export type DragNodePayload<
+  K extends keyof NodePropertiesMap = keyof NodePropertiesMap,
 > = {
-  [T in K]: Node<NodeProperties<SC>[T]> & { type: T };
-}[K];
+  type: K;
+  props: NodePropertiesMap[K];
+};
+
+export type FilterNodeType = Exclude<keyof NodePropertiesMap, "table">;
+
+export type FilterDefinition = {
+  [K in Exclude<keyof NodePropertiesMap, "table">]: NodePropertiesMap[K] & {
+    type: K;
+    panelComponent: (props: NodePropertiesMap[K]) => ReactNode;
+  };
+}[Exclude<keyof NodePropertiesMap, "table">];

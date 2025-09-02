@@ -27,19 +27,27 @@ import {
 } from "@components/ui/resizable";
 import { ScrollArea } from "@components/ui/scroll_area";
 import Database from "@controllers/database";
-import { type BuilderNode } from "@type/node_properties";
+import {
+  type AnyNodeProps,
+  type BuilderNode,
+  type DragNodePayload,
+  type NodePropertiesMap,
+} from "@type/node_properties";
 import useDatabase from "@hooks/use_database";
 import {
+  addEdge,
   Background,
   BackgroundVariant,
   Panel,
   ReactFlow,
   useEdgesState,
   useNodesState,
+  useReactFlow,
+  type Connection,
   type Edge,
   type ReactFlowInstance,
 } from "@xyflow/react";
-import { SaveIcon, Table2Icon } from "lucide-react";
+import { FilterIcon, SaveIcon, Table2Icon } from "lucide-react";
 import {
   Fragment,
   useCallback,
@@ -47,10 +55,11 @@ import {
   useRef,
   useState,
   type JSX,
+  type DragEvent,
 } from "react";
 import type { ImperativePanelHandle } from "react-resizable-panels";
 import { Button } from "@components/ui/button";
-import { PlayIcon } from "@heroicons/react/24/solid";
+import { PlayIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import {
   Tooltip,
   TooltipTrigger,
@@ -60,23 +69,28 @@ import "@xyflow/react/dist/style.css";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useParams } from "react-router";
-import TableNode from "@components/table_node";
+import { TableNode, SelectNode } from "@components/nodes";
+import useDnD from "@hooks/use_dnd";
+import { nanoid } from "nanoid";
+import { FILTERS, SIDEPANEL_DEFAULT_WIDTH } from "@constants";
+import { isConnectionValid } from "@lib/validators";
 
 const database: Database = new Database();
-const SIDEPANEL_DEFAULT_WIDTH = 17;
 
 export default function Builder(): JSX.Element {
-  const { schema, dispatch } = useDatabase();
   const { builderId } = useParams<{ builderId: string }>();
+  const { schema, dispatch } = useDatabase();
+  const { screenToFlowPosition } = useReactFlow();
+  const [nodeProperties, setNodeProperties] = useDnD();
 
   const queryBuilderContainerRef = useRef<HTMLDivElement | null>(null);
   const filterPanelRef = useRef<ImperativePanelHandle>(null);
 
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance<BuilderNode> | null>(null);
-  const [focusedNode, setFocusedNode] = useState<BuilderNode | null>(null);
-  const [nodes, setNodes] = useNodesState<BuilderNode>([]);
-  const [edges, setEdges] = useEdgesState<Edge>([]);
+  const [focusedNode, setFocusedNode] = useState<AnyNodeProps | null>(null);
+  const [nodes, setNodes, onNodesChange] = useNodesState<BuilderNode>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   const schemaRequest = useQuery({
     queryKey: ["database_schema"],
@@ -117,6 +131,65 @@ export default function Builder(): JSX.Element {
     },
   });
 
+  const onNodeDragStart = useCallback(
+    <K extends keyof NodePropertiesMap>(
+      event: DragEvent,
+      props: NodePropertiesMap[K] & { type: K },
+    ) => {
+      const payload: DragNodePayload<K> = {
+        type: props.type,
+        props,
+      };
+
+      setNodeProperties(payload);
+      event.dataTransfer!.effectAllowed = "move";
+    },
+    [setNodeProperties],
+  );
+
+  const canvasDragStartHandler = useCallback(
+    (event: DragEvent) => {
+      setNodeProperties(nodeProperties);
+      event.dataTransfer.effectAllowed = "move";
+    },
+    [nodeProperties, setNodeProperties],
+  );
+
+  const canvasDragOverHandler = useCallback((event: DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const canvasDropHandler = useCallback(
+    (event: DragEvent) => {
+      event.preventDefault();
+
+      if (!nodeProperties) return;
+
+      const { left, top } = event.currentTarget.getBoundingClientRect();
+
+      const position = screenToFlowPosition({
+        x: event.clientX - left / 2,
+        y: event.clientY - top / 2,
+      });
+
+      const newNode: BuilderNode = {
+        id: nodeProperties.props.id,
+        position,
+        type: nodeProperties.type,
+        data: nodeProperties.props,
+      } as BuilderNode;
+
+      setNodes((nodes) => [...nodes, newNode]);
+    },
+    [nodeProperties, screenToFlowPosition, setNodes],
+  );
+
+  const connectionHandler = useCallback(
+    (connection: Connection) => setEdges((edges) => addEdge(connection, edges)),
+    [setEdges],
+  );
+
   useEffect(() => {
     if (schemaRequest.data !== undefined) {
       dispatch({
@@ -134,11 +207,11 @@ export default function Builder(): JSX.Element {
     }
   }, [queryRequest.data, reactFlowInstance, setEdges, setNodes]);
 
-  const nodeClickHandler = useCallback((node: BuilderNode) => {
+  const nodeClickHandler = useCallback((node: AnyNodeProps) => {
     setFocusedNode(node);
 
     if (!filterPanelRef.current?.isExpanded()) {
-      filterPanelRef.current?.expand(2 * SIDEPANEL_DEFAULT_WIDTH);
+      filterPanelRef.current?.expand(SIDEPANEL_DEFAULT_WIDTH);
     }
   }, []);
 
@@ -211,7 +284,7 @@ export default function Builder(): JSX.Element {
             {(Object.keys(schema) as string[]).map((table) => (
               <div
                 key={table}
-                draggable={false}
+                draggable={true}
                 className={
                   "mb-3 flex h-10 cursor-pointer items-center space-x-2 rounded-lg border px-2 py-3 font-semibold transition-all duration-150 select-none hover:bg-stone-800"
                 }
@@ -224,6 +297,15 @@ export default function Builder(): JSX.Element {
                     ],
                     duration: 1000,
                     interpolate: "smooth",
+                  });
+                }}
+                onDragStart={(event) => {
+                  onNodeDragStart(event, {
+                    id: table,
+                    type: "table",
+                    display_name: table,
+                    show_details: false,
+                    columns: schema[table],
                   });
                 }}
               >
@@ -247,6 +329,7 @@ export default function Builder(): JSX.Element {
               className={"h-full w-full"}
               nodeTypes={{
                 table: TableNode,
+                select: SelectNode,
               }}
               proOptions={{
                 hideAttribution: true,
@@ -254,7 +337,16 @@ export default function Builder(): JSX.Element {
               onInit={(instance) => {
                 setReactFlowInstance(instance);
               }}
-              onNodeClick={(_, node) => nodeClickHandler(node)}
+              isValidConnection={(connection) =>
+                isConnectionValid(connection, nodes, edges)
+              }
+              onNodeClick={(_, node) => nodeClickHandler(node.data)}
+              onDragStart={(event) => canvasDragStartHandler(event)}
+              onDragOver={canvasDragOverHandler}
+              onDrop={canvasDropHandler}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={connectionHandler}
             >
               <Panel position="top-center">
                 <div
@@ -322,7 +414,68 @@ export default function Builder(): JSX.Element {
           maxSize={SIDEPANEL_DEFAULT_WIDTH}
           collapsible={true}
           ref={filterPanelRef}
-        ></ResizablePanel>
+        >
+          <div className={"text-foreground h-full w-full bg-stone-900"}>
+            <div className={"flex items-center justify-between px-3 py-4"}>
+              <div className={"flex items-center space-x-2"}>
+                <h5 className={"font-medium"}>
+                  {focusedNode?.type === "table" ? "Filters" : "Properties"}
+                </h5>
+              </div>
+              <Button
+                size={"icon"}
+                variant={"secondary"}
+                className={"cursor-pointer bg-transparent"}
+                onClick={() => {
+                  setFocusedNode(null);
+                  filterPanelRef.current?.collapse();
+                }}
+              >
+                <XMarkIcon />
+              </Button>
+            </div>
+            <div className={"flex h-full w-full flex-col items-start"}>
+              <ScrollArea
+                className={
+                  "bg-background text-foreground h-[92.5dvh] w-full px-2 pt-3 pb-20"
+                }
+              >
+                {focusedNode?.type !== "table" ? (
+                  <Fragment>
+                    {FILTERS.map((filter) => (
+                      <div key={filter.display_name}>
+                        {filter.panelComponent(filter)}
+                      </div>
+                    ))}
+                  </Fragment>
+                ) : (
+                  <Fragment>
+                    {FILTERS.map((filter) => (
+                      <div
+                        key={filter.display_name}
+                        draggable={true}
+                        className={
+                          "mb-3 flex h-10 cursor-pointer items-center space-x-2 rounded-lg border px-2 py-3 font-semibold transition-all duration-150 select-none hover:bg-stone-800"
+                        }
+                        onDragStart={(e) => {
+                          onNodeDragStart(e, {
+                            ...filter,
+                            id: `${nanoid()}--#--filter:${filter.type}`,
+                          });
+                        }}
+                      >
+                        <FilterIcon className={"size-5 text-purple-400"} />
+                        <span className={"block text-xs"}>
+                          {filter.display_name}
+                        </span>
+                      </div>
+                    ))}
+                  </Fragment>
+                )}
+              </ScrollArea>
+            </div>
+          </div>
+        </ResizablePanel>
       </ResizablePanelGroup>
     </div>
   );

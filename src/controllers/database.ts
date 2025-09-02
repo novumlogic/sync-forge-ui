@@ -101,7 +101,8 @@ export default class Database {
         position: { x: 0, y: 0 },
         data: {
           id: tableName,
-          name: tableName,
+          type: "table",
+          display_name: tableName,
           columns: columns,
           show_details: !givenOptions.no_columns,
         } satisfies TableNodeProperties,
