@@ -1,13 +1,68 @@
 import type { BuilderNode } from "@type/node_properties";
 import type { Connection, Edge } from "@xyflow/react";
+import type { DependencyGraph } from "./dependency_graph";
 
 export function isConnectionValid(
   connection: Edge | Connection,
   nodes: Array<BuilderNode>,
   edges: Array<Edge>,
+  dependency_graph: DependencyGraph | null,
 ): boolean {
+  if (dependency_graph === null) return false;
+
   if (cycleExists(connection, nodes, edges)) {
     return false;
+  }
+
+  const sourceNode = nodes.find((node) => node.id === connection.source);
+  const targetNode = nodes.find((node) => node.id === connection.target);
+
+  if (
+    sourceNode === null ||
+    targetNode === null ||
+    sourceNode === undefined ||
+    targetNode === undefined
+  ) {
+    return false;
+  }
+
+  if (sourceNode.data.type === "table" && targetNode.data.type === "table") {
+    const sourceTable = sourceNode.data;
+    const targetTable = targetNode.data;
+
+    if (
+      sourceTable.id === targetTable.id ||
+      sourceTable.columns.length === 0 ||
+      targetTable.columns.length === 0
+    ) {
+      return false;
+    }
+
+    if (
+      dependency_graph
+        .dependentsOf(sourceTable.id)
+        .filter((dependent) => dependent.table_name === targetTable.id)
+        .length === 0
+    ) {
+      return false;
+    }
+  }
+
+  if (sourceNode.data.type === "select" && targetNode.data.type === "select") {
+    const sourceSelect = sourceNode.data;
+    if (Object.keys(sourceSelect.columns).length === 0) {
+      return false;
+    }
+  }
+
+  if (sourceNode.data.type === "table" && targetNode.data.type === "select") {
+    const targetSelect = targetNode.data;
+    if (
+      Object.keys(targetSelect.columns).length !== 0 &&
+      targetSelect.table !== ""
+    ) {
+      return false;
+    }
   }
 
   return true;

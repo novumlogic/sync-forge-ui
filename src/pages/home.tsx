@@ -32,7 +32,7 @@ import { FingerPrintIcon } from "@heroicons/react/24/outline";
 const database: Database = new Database();
 
 export default function Home() {
-  const { schema, dispatch } = useDatabase();
+  const { store: schema, dispatch } = useDatabase();
 
   useEffect(() => {
     if (schema !== null) {

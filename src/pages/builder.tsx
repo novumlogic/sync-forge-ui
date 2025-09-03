@@ -32,6 +32,7 @@ import {
   type BuilderNode,
   type DragNodePayload,
   type NodePropertiesMap,
+  type SelectNodeProperties,
 } from "@type/node_properties";
 import useDatabase from "@hooks/use_database";
 import {
@@ -79,8 +80,11 @@ const database: Database = new Database();
 
 export default function Builder(): JSX.Element {
   const { builderId } = useParams<{ builderId: string }>();
-  const { schema, dispatch } = useDatabase();
-  const { screenToFlowPosition } = useReactFlow();
+  const {
+    store: { schema, graph },
+    dispatch,
+  } = useDatabase();
+  const { screenToFlowPosition, updateNodeData } = useReactFlow();
   const [nodeProperties, setNodeProperties] = useDnD();
 
   const queryBuilderContainerRef = useRef<HTMLDivElement | null>(null);
@@ -186,8 +190,44 @@ export default function Builder(): JSX.Element {
   );
 
   const connectionHandler = useCallback(
-    (connection: Connection) => setEdges((edges) => addEdge(connection, edges)),
-    [setEdges],
+    (connection: Connection) => {
+      setEdges((edges) => addEdge(connection, edges));
+
+      const sourceNode = nodes.find((node) => node.id === connection.source);
+      const targetNode = nodes.find((node) => node.id === connection.target);
+
+      if (
+        sourceNode === null ||
+        targetNode === null ||
+        sourceNode === undefined ||
+        targetNode === undefined
+      ) {
+        return;
+      }
+
+      if (
+        sourceNode.data.type === "table" &&
+        targetNode.data.type === "select"
+      ) {
+        const sourceTable = sourceNode.data;
+        const targetSelect = targetNode.data;
+
+        updateNodeData(targetNode.id, {
+          ...targetSelect,
+          table: sourceTable.id,
+          columns: sourceTable.columns.reduce(
+            (acc, col) => {
+              acc[col.column_name] = { selected: false };
+              return acc;
+            },
+            {} as Record<string, { selected: boolean }>,
+          ),
+        } satisfies SelectNodeProperties);
+
+        console.log(targetSelect);
+      }
+    },
+    [nodes, setEdges, updateNodeData],
   );
 
   useEffect(() => {
@@ -338,7 +378,7 @@ export default function Builder(): JSX.Element {
                 setReactFlowInstance(instance);
               }}
               isValidConnection={(connection) =>
-                isConnectionValid(connection, nodes, edges)
+                isConnectionValid(connection, nodes, edges, graph)
               }
               onNodeClick={(_, node) => nodeClickHandler(node.data)}
               onDragStart={(event) => canvasDragStartHandler(event)}
@@ -440,11 +480,13 @@ export default function Builder(): JSX.Element {
                   "bg-background text-foreground h-[92.5dvh] w-full px-2 pt-3 pb-20"
                 }
               >
-                {focusedNode?.type !== "table" ? (
+                {focusedNode !== null && focusedNode.type !== "table" ? (
                   <Fragment>
                     {FILTERS.map((filter) => (
                       <div key={filter.display_name}>
-                        {filter.panelComponent(filter)}
+                        {filter.panelComponent(
+                          focusedNode as SelectNodeProperties,
+                        )}
                       </div>
                     ))}
                   </Fragment>
