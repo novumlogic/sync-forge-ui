@@ -324,7 +324,7 @@ export default function Builder(): JSX.Element {
             {(Object.keys(schema) as string[]).map((table) => (
               <div
                 key={table}
-                draggable={true}
+                draggable={!nodes.some((n) => n.id === table)}
                 className={
                   "mb-3 flex h-10 cursor-pointer items-center space-x-2 rounded-lg border px-2 py-3 font-semibold transition-all duration-150 select-none hover:bg-stone-800"
                 }
