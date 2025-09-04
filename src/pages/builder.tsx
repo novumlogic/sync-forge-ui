@@ -329,6 +329,8 @@ export default function Builder(): JSX.Element {
                   "mb-3 flex h-10 cursor-pointer items-center space-x-2 rounded-lg border px-2 py-3 font-semibold transition-all duration-150 select-none hover:bg-stone-800"
                 }
                 onClick={() => {
+                  if(!nodes.some((n) => n.id === table)) return;
+                  
                   reactFlowInstance?.fitView({
                     nodes: [
                       {
