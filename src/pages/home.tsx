@@ -25,14 +25,17 @@ import Database from "@controllers/database";
 import useDatabase from "@hooks/use_database";
 import { Background, BackgroundVariant, ReactFlow } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import {TableNode} from "@components/nodes";
+import { TableNode } from "@components/nodes";
 import { KeyIcon } from "@heroicons/react/24/solid";
 import { FingerPrintIcon } from "@heroicons/react/24/outline";
 
 const database: Database = new Database();
 
 export default function Home() {
-  const { store: schema, dispatch } = useDatabase();
+  const {
+    store: { schema },
+    dispatch,
+  } = useDatabase();
 
   useEffect(() => {
     if (schema !== null) {
@@ -57,7 +60,7 @@ export default function Home() {
   }
 
   const { nodes, edges } = database.generateGraph(schema);
-  
+
   return (
     <div>
       <div style={{ width: "100dvw", height: "88dvh" }}>
@@ -70,12 +73,12 @@ export default function Home() {
             hideAttribution: true,
           }}
         >
-          <Background variant={BackgroundVariant.Dots} bgColor="#171717"/>
+          <Background variant={BackgroundVariant.Dots} bgColor="#171717" />
         </ReactFlow>
       </div>
       <div
         className={
-          "flex h-[5dvh] w-full items-center justify-center space-x-10 border-t bottom-0 fixed bg-background text-foreground"
+          "bg-background text-foreground fixed bottom-0 flex h-[5dvh] w-full items-center justify-center space-x-10 border-t"
         }
       >
         <div className={"flex items-center gap-1 font-mono"}>
