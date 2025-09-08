@@ -21,14 +21,14 @@
  */
 
 import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
-import { Fragment, type JSX } from "react";
+import { Fragment, memo, type JSX } from "react";
 import { KeyIcon } from "@heroicons/react/24/solid";
 import { FingerPrintIcon } from "@heroicons/react/24/outline";
 import { Table2Icon } from "lucide-react";
 import type { TableNodeProperties } from "@type/node_properties";
 import useDatabase from "@hooks/use_database";
 
-export default function TableNode({
+function TableNode({
   data,
 }: NodeProps<Node<TableNodeProperties>>): JSX.Element {
   const {
@@ -121,3 +121,5 @@ export default function TableNode({
     </div>
   );
 }
+
+export default memo(TableNode);

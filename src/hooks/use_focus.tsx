@@ -20,22 +20,20 @@
  * SOFTWARE.
  */
 
-import type { JSX } from "react";
-import { Outlet } from "react-router";
-import NavBar from "@components/navbar.tsx";
+import { FocusContext } from "@providers/focus_provider";
+import { useContext } from "react";
 
-export default function RootLayout(): JSX.Element {
+const useFocus = () => {
   /**
-   * Layout component that provides the main structure for the app.
-   * Includes a navigation bar and renders child routes via Outlet.
-   * @returns The root layout JSX element.
+   * Accesses the database context provided by DatabaseProvider.
+   * Throws an error if used outside of the provider.
+   * @returns The focus context value.
    */
-  return (
-    <div className={"flex min-h-dvh flex-col"}>
-      <NavBar />
-      <main className={"pt-18"}>
-        <Outlet />
-      </main>
-    </div>
-  );
-}
+  const context = useContext(FocusContext);
+  if (!context) {
+    throw new Error("useFocus Hook must be used within the Focus Provider");
+  }
+  return context;
+};
+
+export default useFocus;

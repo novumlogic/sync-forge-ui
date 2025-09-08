@@ -20,44 +20,45 @@
  * SOFTWARE.
  */
 
-import type { SelectNodeProperties } from "@type/node_properties";
-import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { FilterIcon } from "lucide-react";
-import { memo, type JSX } from "react";
+import type { NodePropertiesMap } from "@type/node_properties";
+import { Table2Icon } from "lucide-react";
+import { type JSX, type DragEvent } from "react";
 
-function SelectNode({
-  data,
-}: NodeProps<
-  Node<SelectNodeProperties>
->): JSX.Element {
+interface TablesDetailProps {
+  draggable: boolean;
+  table: string;
+  onNodeDragStart: <K extends keyof NodePropertiesMap>(
+    event: DragEvent<HTMLDivElement>,
+    props: NodePropertiesMap[K] & { type: K },
+  ) => void;
+  onClick: (table: string) => void;
+}
+
+export default function TableDetail({
+  table,
+  onNodeDragStart,
+  onClick,
+  draggable,
+}: Readonly<TablesDetailProps>): JSX.Element {
   return (
     <div
+      key={table}
+      draggable={draggable}
       className={
-        "flex items-center rounded-lg border border-purple-600 bg-purple-100 dark:text-black"
+        "flex h-10 cursor-pointer items-center space-x-2 rounded-lg border px-2 py-3 font-semibold transition-all duration-150 select-none hover:bg-stone-800"
       }
+      onClick={() => onClick(table)}
+      onDragStart={(event) => {
+        onNodeDragStart(event, {
+          id: table,
+          type: "table",
+          display_name: table,
+          show_details: false,
+        });
+      }}
     >
-      <Handle
-        type="target"
-        id={`${data.id}-target`}
-        position={Position.Left}
-        className={"!static !left-0 mt-2 !block !size-2.5 !bg-purple-600"}
-      />
-      <div
-        className={
-          "justify-betwee flex w-full items-center space-x-3 px-1 py-2 font-medium"
-        }
-      >
-        <FilterIcon className={"size-5 text-purple-600"} />
-        <span className={"block"}>{String(data.type)}</span>
-      </div>
-      <Handle
-        type="source"
-        id={`${data.id}-source`}
-        position={Position.Right}
-        className={"!static !right-0 mt-2 !block !size-2.5 !bg-purple-600"}
-      />
+      <Table2Icon className={"text-primary size-5"} />
+      <span className={"block text-xs"}>{table}</span>
     </div>
   );
 }
-
-export default memo(SelectNode);

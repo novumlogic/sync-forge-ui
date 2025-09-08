@@ -23,14 +23,11 @@
 import {
   type RouteConfig,
   index,
-  layout,
   route,
 } from "@react-router/dev/routes";
 
 export default [
   index("pages/home.tsx"),
-  layout("layouts/builder_layout.tsx", [
-    route("/builder/:builderId", "pages/builder.tsx"),
-  ]),
+  route("/builder/:builderId", "layouts/builder_layout.tsx"),
   route("*?", "pages/not_found.tsx"),
 ] satisfies RouteConfig;
