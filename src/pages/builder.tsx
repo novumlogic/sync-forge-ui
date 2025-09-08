@@ -300,27 +300,27 @@ export default function Builder(): JSX.Element {
   }
 
   return (
-    <div className="h-[92.5dvh]">
-      <ResizablePanelGroup direction={"horizontal"} className={"h-full"}>
-        <ResizablePanel
-          order={0}
-          defaultSize={SIDEPANEL_DEFAULT_WIDTH}
-          className={"h-full"}
-          maxSize={SIDEPANEL_DEFAULT_WIDTH}
-          collapsible={true}
+    <ResizablePanelGroup
+      direction={"horizontal"}
+      className={"max-h-[92.7dvh] w-dvw"}
+    >
+      <ResizablePanel
+        order={0}
+        defaultSize={SIDEPANEL_DEFAULT_WIDTH}
+        maxSize={SIDEPANEL_DEFAULT_WIDTH}
+        collapsible={true}
+      >
+        <div
+          className={
+            "bg-background text-foreground flex w-full items-center justify-start px-3 pt-5 pb-3 font-bold"
+          }
         >
-          <div
-            className={
-              "bg-background text-foreground flex w-full items-center justify-start px-3 pt-5 pb-3 font-bold"
-            }
-          >
-            <h3>Tables</h3>
-          </div>
-          <ScrollArea
-            className={
-              "bg-background text-foreground h-[92.5dvh] w-full px-2 pt-3 pb-20"
-            }
-          >
+          <h3>Tables</h3>
+        </div>
+        <ScrollArea
+          className={"bg-background text-foreground h-full w-full px-2 pt-3"}
+        >
+          <div className={"flex flex-col gap-2 pb-15"}>
             {(Object.keys(schema) as string[]).map((table) => (
               <div
                 key={table}
@@ -329,8 +329,8 @@ export default function Builder(): JSX.Element {
                   "mb-3 flex h-10 cursor-pointer items-center space-x-2 rounded-lg border px-2 py-3 font-semibold transition-all duration-150 select-none hover:bg-stone-800"
                 }
                 onClick={() => {
-                  if(!nodes.some((n) => n.id === table)) return;
-                  
+                  if (!nodes.some((n) => n.id === table)) return;
+
                   reactFlowInstance?.fitView({
                     nodes: [
                       {
@@ -355,133 +355,130 @@ export default function Builder(): JSX.Element {
                 <span className={"block text-xs"}>{table}</span>
               </div>
             ))}
-          </ScrollArea>
-        </ResizablePanel>
-        <ResizableHandle className={"bg-border"} />
-        <ResizablePanel
-          order={1}
-          defaultSize={Math.abs(100 - SIDEPANEL_DEFAULT_WIDTH)}
-          className={"h-full"}
-        >
-          <div ref={queryBuilderContainerRef} className={"h-full w-full"}>
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              fitView={false}
-              className={"h-full w-full"}
-              nodeTypes={{
-                table: TableNode,
-                select: SelectNode,
-              }}
-              proOptions={{
-                hideAttribution: true,
-              }}
-              onInit={(instance) => {
-                setReactFlowInstance(instance);
-              }}
-              isValidConnection={(connection) =>
-                isConnectionValid(connection, nodes, edges, graph)
-              }
-              onNodeClick={(_, node) => nodeClickHandler(node.data)}
-              onDragStart={(event) => canvasDragStartHandler(event)}
-              onDragOver={canvasDragOverHandler}
-              onDrop={canvasDropHandler}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={connectionHandler}
-            >
-              <Panel position="top-center">
-                <div
-                  className={
-                    "border-border bg-background flex w-32 items-center justify-evenly rounded-lg border py-1 shadow-md"
-                  }
-                >
-                  <Tooltip>
-                    <TooltipTrigger asChild={true}>
-                      <Button
-                        variant={"secondary"}
-                        size={"icon"}
-                        className={"cursor-pointer bg-transparent"}
-                        onClick={async () => {
-                          const result = await database.executeQuery(
-                            "fetch_all_identifiers",
-                          );
-
-                          if (result.ok) {
-                            toast("Query executed successfully.");
-                          } else {
-                            toast(
-                              `Query failed: ${String((result.error.raw as { error: string; status_code: string }).error)}`,
-                            );
-                          }
-                        }}
-                      >
-                        <PlayIcon className={"size-6 fill-green-600"} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={"bottom"}>
-                      <p>Run Query</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild={true}>
-                      <Button
-                        variant={"secondary"}
-                        size={"icon"}
-                        className={"cursor-pointer bg-transparent"}
-                        onClick={pushQueryHandler}
-                      >
-                        <SaveIcon className={"size-6 text-orange-600"} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={"bottom"}>
-                      <p>Save Query</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              </Panel>
-              <Background variant={BackgroundVariant.Dots} bgColor="#171717" />
-            </ReactFlow>
           </div>
-        </ResizablePanel>
-        <ResizableHandle
-          hidden={focusedNode === null}
-          className={"bg-border"}
-        />
-        <ResizablePanel
-          order={2}
-          defaultSize={0}
-          className={"h-full"}
-          maxSize={SIDEPANEL_DEFAULT_WIDTH}
-          collapsible={true}
-          ref={filterPanelRef}
-        >
-          <div className={"text-foreground h-full w-full bg-stone-900"}>
-            <div className={"flex items-center justify-between px-3 py-4"}>
-              <div className={"flex items-center space-x-2"}>
-                <h5 className={"font-medium"}>
-                  {focusedNode?.type === "table" ? "Filters" : "Properties"}
-                </h5>
-              </div>
-              <Button
-                size={"icon"}
-                variant={"secondary"}
-                className={"cursor-pointer bg-transparent"}
-                onClick={() => {
-                  setFocusedNode(null);
-                  filterPanelRef.current?.collapse();
-                }}
-              >
-                <XMarkIcon />
-              </Button>
-            </div>
-            <div className={"flex h-full w-full flex-col items-start"}>
-              <ScrollArea
+        </ScrollArea>
+      </ResizablePanel>
+      <ResizableHandle className={"bg-border"} />
+      <ResizablePanel
+        order={1}
+        defaultSize={Math.abs(100 - SIDEPANEL_DEFAULT_WIDTH)}
+      >
+        <div ref={queryBuilderContainerRef} className={"h-full w-full"}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            fitView={false}
+            className={"h-full w-full"}
+            nodeTypes={{
+              table: TableNode,
+              select: SelectNode,
+            }}
+            proOptions={{
+              hideAttribution: true,
+            }}
+            onInit={(instance) => {
+              setReactFlowInstance(instance);
+            }}
+            isValidConnection={(connection) =>
+              isConnectionValid(connection, nodes, edges, graph)
+            }
+            onNodeClick={(_, node) => nodeClickHandler(node.data)}
+            onDragStart={(event) => canvasDragStartHandler(event)}
+            onDragOver={canvasDragOverHandler}
+            onDrop={canvasDropHandler}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={connectionHandler}
+          >
+            <Panel position="top-center">
+              <div
                 className={
-                  "bg-background text-foreground h-[92.5dvh] w-full px-2 pt-3 pb-20"
+                  "border-border bg-background flex w-32 items-center justify-evenly rounded-lg border py-1 shadow-md"
                 }
               >
+                <Tooltip>
+                  <TooltipTrigger asChild={true}>
+                    <Button
+                      variant={"secondary"}
+                      size={"icon"}
+                      className={"cursor-pointer bg-transparent"}
+                      onClick={async () => {
+                        const result = await database.executeQuery(
+                          "fetch_all_identifiers",
+                        );
+
+                        if (result.ok) {
+                          toast("Query executed successfully.");
+                        } else {
+                          toast(
+                            `Query failed: ${String((result.error.raw as { error: string; status_code: string }).error)}`,
+                          );
+                        }
+                      }}
+                    >
+                      <PlayIcon className={"size-6 fill-green-600"} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side={"bottom"}>
+                    <p>Run Query</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild={true}>
+                    <Button
+                      variant={"secondary"}
+                      size={"icon"}
+                      className={"cursor-pointer bg-transparent"}
+                      onClick={pushQueryHandler}
+                    >
+                      <SaveIcon className={"size-6 text-orange-600"} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side={"bottom"}>
+                    <p>Save Query</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </Panel>
+            <Background variant={BackgroundVariant.Dots} bgColor="#171717" />
+          </ReactFlow>
+        </div>
+      </ResizablePanel>
+      <ResizableHandle hidden={focusedNode === null} className={"bg-border"} />
+      <ResizablePanel
+        order={2}
+        defaultSize={0}
+        maxSize={SIDEPANEL_DEFAULT_WIDTH}
+        collapsible={true}
+        ref={filterPanelRef}
+      >
+        <div className={"text-foreground h-full w-full bg-stone-900"}>
+          <div className={"flex items-center justify-between px-3 py-4"}>
+            <div className={"flex items-center space-x-2"}>
+              <h5 className={"font-medium"}>
+                {focusedNode?.type === "table" ? "Filters" : "Properties"}
+              </h5>
+            </div>
+            <Button
+              size={"icon"}
+              variant={"secondary"}
+              className={"cursor-pointer bg-transparent"}
+              onClick={() => {
+                setFocusedNode(null);
+                filterPanelRef.current?.collapse();
+              }}
+            >
+              <XMarkIcon />
+            </Button>
+          </div>
+          <div className={"flex h-full w-full flex-col items-start"}>
+            <ScrollArea
+              className={
+                "bg-background text-foreground h-full w-full px-2 pt-3"
+              }
+            >
+              <div className={"flex flex-col gap-2 pb-15"}>
                 {focusedNode !== null && focusedNode.type !== "table" ? (
                   <Fragment>
                     {FILTERS.map((filter) => (
@@ -516,11 +513,11 @@ export default function Builder(): JSX.Element {
                     ))}
                   </Fragment>
                 )}
-              </ScrollArea>
-            </div>
+              </div>
+            </ScrollArea>
           </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </div>
+        </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 }

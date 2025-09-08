@@ -63,7 +63,7 @@ export default function Home() {
 
   return (
     <div>
-      <div style={{ width: "100dvw", height: "88dvh" }}>
+      <div className={"h-[92.7dvh] w-dvw"}>
         <ReactFlow
           nodeTypes={{ table: TableNode }}
           defaultNodes={nodes}
@@ -72,6 +72,7 @@ export default function Home() {
           proOptions={{
             hideAttribution: true,
           }}
+          className={"h-full w-full"}
         >
           <Background variant={BackgroundVariant.Dots} bgColor="#171717" />
         </ReactFlow>
