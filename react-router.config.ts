@@ -20,44 +20,9 @@
  * SOFTWARE.
  */
 
-import type { SelectNodeProperties } from "@type/node_properties";
-import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { FilterIcon } from "lucide-react";
-import type { JSX } from "react";
+import type { Config } from "@react-router/dev/config";
 
-export default function SelectNode({
-  data,
-}: NodeProps<
-  Node<SelectNodeProperties>
->): JSX.Element {
-  return (
-    <div
-      className={
-        "flex items-center rounded-lg border border-purple-600 bg-purple-100 dark:text-black"
-      }
-    >
-      <Handle
-        type="target"
-        id={`${data.id}-target`}
-        position={Position.Left}
-        className={"!static !left-0 mt-2 !block !size-2.5 !bg-purple-600"}
-      />
-      <div
-        className={
-          "justify-betwee flex w-full items-center space-x-3 px-1 py-2 font-medium"
-        }
-      >
-        <FilterIcon className={"size-5 text-purple-600"} />
-        <span className={"block"}>{String(data.type)}</span>
-      </div>
-      <Handle
-        type="source"
-        id={`${data.id}-source`}
-        position={Position.Right}
-        className={"!static !right-0 mt-2 !block !size-2.5 !bg-purple-600"}
-      />
-    </div>
-  );
-}
-
-
+export default {
+  appDirectory: "src",
+  ssr: false,
+} satisfies Config;

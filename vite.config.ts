@@ -22,11 +22,11 @@
 
 import path from "path";
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [reactRouter(), tailwindcss()],
   resolve: {
     alias: {
       "@styles": path.resolve(__dirname, "./src/styles"),

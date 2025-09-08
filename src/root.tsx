@@ -20,47 +20,35 @@
  * SOFTWARE.
  */
 
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "@styles/index.css";
-import Home from "@pages/home.tsx";
+import Navbar from "@components/navbar";
+import { Toaster } from "@components/ui/sonner";
 import DatabaseProvider from "@providers/database_provider";
-import { Toaster } from "@components/ui/sonner.tsx";
-import { createBrowserRouter } from "react-router";
-import { RouterProvider } from "react-router/dom";
-import type RouteHandle from "@type/route_handle.ts";
-import RootLayout from "./layouts/root_layout";
-import Builder from "@pages/builder";
-import { ReactFlowProvider } from "@xyflow/react";
-import { DnDProvider } from "./providers/dnd_provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-const router = createBrowserRouter([
-  {
-    element: <RootLayout />,
-    children: [
-      {
-        path: "/",
-        element: <Home />,
-        handle: {
-          title: "Database Schema",
-        } satisfies RouteHandle,
-      },
-      {
-        path: "/builder/:builderId",
-        Component: Builder,
-        handle: {
-          title: "Query Builder",
-        } satisfies RouteHandle,
-      },
-    ],
-  },
-]);
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 
 const queryClient = new QueryClient();
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+export function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Syncforge</title>
+        <Meta />
+        <Links />
+      </head>
+      <body className={"dark"}>
+        {children}
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+export default function Root() {
+  return (
     <QueryClientProvider client={queryClient}>
       <DatabaseProvider
         store={{
@@ -68,13 +56,14 @@ createRoot(document.getElementById("root")!).render(
           graph: null,
         }}
       >
-        <DnDProvider>
-          <ReactFlowProvider>
-            <Toaster />
-            <RouterProvider router={router}></RouterProvider>
-          </ReactFlowProvider>
-        </DnDProvider>
+        <Toaster />
+        <div className={"flex min-h-dvh flex-col"}>
+          <Navbar />
+          <main className={"pt-18"}>
+            <Outlet />
+          </main>
+        </div>
       </DatabaseProvider>
     </QueryClientProvider>
-  </StrictMode>,
-);
+  );
+}

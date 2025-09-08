@@ -36,7 +36,7 @@ export default function TableNode({
         <Table2Icon className={"size-6"} />
         <h5>{data.display_name}</h5>
       </div>
-      <div className="flex flex-col gap-y-2 pt-4 pb-2">
+      <div className="flex flex-col gap-y-2 pt-4 pb-2 dark:text-black">
         {data.columns.map((c) => (
           <div
             key={c.column_name}
@@ -101,7 +101,7 @@ export default function TableNode({
         }
       >
         <Table2Icon className={"text-primary size-5"} />
-        <span className={"block"}>{String(data.display_name)}</span>
+        <span className={"block dark:text-black"}>{String(data.display_name)}</span>
       </div>
       <Handle
         type="source"
