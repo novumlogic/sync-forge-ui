@@ -26,10 +26,17 @@ import { KeyIcon } from "@heroicons/react/24/solid";
 import { FingerPrintIcon } from "@heroicons/react/24/outline";
 import { Table2Icon } from "lucide-react";
 import type { TableNodeProperties } from "@type/node_properties";
+import useDatabase from "@hooks/use_database";
 
 export default function TableNode({
   data,
 }: NodeProps<Node<TableNodeProperties>>): JSX.Element {
+  const {
+    store: { schema },
+  } = useDatabase({
+    initialized: true,
+  });
+
   return data.show_details ? (
     <div className="bg-primary-foreground rounded-lg border">
       <div className="bg-primary text-foreground flex items-center space-x-1 rounded-t-md px-2 py-3 font-semibold">
@@ -37,7 +44,7 @@ export default function TableNode({
         <h5>{data.display_name}</h5>
       </div>
       <div className="flex flex-col gap-y-2 pt-4 pb-2 dark:text-black">
-        {data.columns.map((c) => (
+        {schema[data.id].map((c) => (
           <div
             key={c.column_name}
             className="flex items-center justify-between"
@@ -101,7 +108,9 @@ export default function TableNode({
         }
       >
         <Table2Icon className={"text-primary size-5"} />
-        <span className={"block dark:text-black"}>{String(data.display_name)}</span>
+        <span className={"block dark:text-black"}>
+          {String(data.display_name)}
+        </span>
       </div>
       <Handle
         type="source"

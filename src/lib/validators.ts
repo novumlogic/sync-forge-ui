@@ -30,11 +30,7 @@ export function isConnectionValid(
     const sourceTable = sourceNode.data;
     const targetTable = targetNode.data;
 
-    if (
-      sourceTable.id === targetTable.id ||
-      sourceTable.columns.length === 0 ||
-      targetTable.columns.length === 0
-    ) {
+    if (sourceTable.id === targetTable.id) {
       return false;
     }
 

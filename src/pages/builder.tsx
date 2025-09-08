@@ -215,7 +215,7 @@ export default function Builder(): JSX.Element {
         updateNodeData(targetNode.id, {
           ...targetSelect,
           table: sourceTable.id,
-          columns: sourceTable.columns.reduce(
+          columns: schema![sourceTable.id].reduce(
             (acc, col) => {
               acc[col.column_name] = { selected: false };
               return acc;
@@ -227,7 +227,7 @@ export default function Builder(): JSX.Element {
         console.log(targetSelect);
       }
     },
-    [nodes, setEdges, updateNodeData],
+    [nodes, schema, setEdges, updateNodeData],
   );
 
   useEffect(() => {
@@ -347,7 +347,6 @@ export default function Builder(): JSX.Element {
                     type: "table",
                     display_name: table,
                     show_details: false,
-                    columns: schema[table],
                   });
                 }}
               >

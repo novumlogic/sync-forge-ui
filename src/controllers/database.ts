@@ -103,7 +103,6 @@ export default class Database {
           id: tableName,
           type: "table",
           display_name: tableName,
-          columns: columns,
           show_details: !givenOptions.no_columns,
         } satisfies TableNodeProperties,
       });
@@ -128,6 +127,7 @@ export default class Database {
     }
 
     return this.createGraphLayout<TableNodeProperties, "table">(
+      schema,
       nodes,
       edges,
       "LR",
@@ -142,16 +142,11 @@ export default class Database {
   public async getQuery(
     queryName: string,
   ): Promise<
-    Result<
-      HttpSuccess<
-        ReactFlowJsonObject<BuilderNode, Edge>
-      >,
-      HttpError
-    >
+    Result<HttpSuccess<ReactFlowJsonObject<BuilderNode, Edge>>, HttpError>
   > {
-    return this.http.get<
-      ReactFlowJsonObject<BuilderNode, Edge>
-    >(`/queries/${queryName}`);
+    return this.http.get<ReactFlowJsonObject<BuilderNode, Edge>>(
+      `/queries/${queryName}`,
+    );
   }
 
   /**
@@ -189,6 +184,7 @@ export default class Database {
     D extends TableNodeProperties,
     T extends string | undefined = string,
   >(
+    schema: DatabaseSchema,
     nodes: ReadonlyArray<Node<D, T>>,
     edges: ReadonlyArray<Edge>,
     direction: "LR" | "RL" | "TB" | "BT" = "LR",
@@ -206,7 +202,7 @@ export default class Database {
     g.setDefaultEdgeLabel(() => ({}));
 
     nodes.forEach((n) => {
-      const { width, height } = this.tableNodeSize(n.data.columns);
+      const { width, height } = this.tableNodeSize(schema[n.data.id]);
       g.setNode(n.id, {
         width: width + this.NODE_BUFFER_X,
         height: height + this.NODE_BUFFER_Y,

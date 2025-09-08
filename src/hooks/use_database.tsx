@@ -22,20 +22,53 @@
 
 import { useContext } from "react";
 import { DatabaseContext } from "@providers/database_provider";
+import type { DatabaseSchema } from "@type/database_schema";
+import type { DependencyGraph } from "@lib/dependency_graph";
 
-const useDatabase = () => {
-  /**
-   * Accesses the database context provided by DatabaseProvider.
-   * Throws an error if used outside of the provider.
-   * @returns The database context value.
-   */
+type Overwrite<T, U> = Omit<T, keyof U> & U;
+
+type ContextValue = React.ContextType<typeof DatabaseContext>;
+
+type InitializedContext = Overwrite<
+  ContextValue,
+  {
+    store: {
+      schema: DatabaseSchema;
+      graph: DependencyGraph;
+    };
+  }
+>;
+
+function useDatabase(options: { initialized: true }): InitializedContext;
+function useDatabase(options?: { initialized?: boolean }): ContextValue;
+
+/**
+ * Accesses the database context provided by DatabaseProvider.
+ * Throws an error if used outside of the provider.
+ * @returns The database context value.
+ */
+function useDatabase(options?: { initialized?: boolean }) {
   const context = useContext(DatabaseContext);
   if (!context) {
     throw new Error(
       "useDatabase Hook must be used within the Database Provider",
     );
   }
+
+  if (options?.initialized === true) {
+    const { schema, graph } = context.store;
+
+    if (!schema || !graph) {
+      throw new Error("Database not initialized: schema/graph missing");
+    }
+
+    return {
+      ...context,
+      store: { schema, graph },
+    } satisfies InitializedContext;
+  }
+
   return context;
-};
+}
 
 export default useDatabase;

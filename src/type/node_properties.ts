@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-import type TableColumn from "@dto/table_column";
 import type { Node } from "@xyflow/react";
 import type { ReactNode } from "react";
 
@@ -56,7 +55,6 @@ export type TableNodeProperties = {
   id: string;
   display_name: string;
   show_details: boolean;
-  columns: Array<TableColumn>;
 };
 
 export interface NodePropertiesMap {
