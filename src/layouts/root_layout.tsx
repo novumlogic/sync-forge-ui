@@ -31,7 +31,7 @@ export default function RootLayout(): JSX.Element {
    * @returns The root layout JSX element.
    */
   return (
-    <div className={"flex min-h-dvh flex-col dark"}>
+    <div className={"flex min-h-dvh flex-col"}>
       <NavBar />
       <main className={"pt-18"}>
         <Outlet />
