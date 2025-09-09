@@ -174,7 +174,6 @@ function BuilderMetaLayout(): JSX.Element {
           ),
         } satisfies SelectNodeProperties);
 
-        console.log(targetSelect);
       }
     },
     [getNode, schema, setEdges, updateNodeData],
@@ -202,8 +201,6 @@ function BuilderMetaLayout(): JSX.Element {
   if (schemaRequest.isLoading || queryRequest.isLoading) {
     return <div>Loading...</div>;
   }
-
-  console.log(queryRequest.data);
   
 
   return (
