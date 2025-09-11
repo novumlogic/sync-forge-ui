@@ -20,14 +20,9 @@
  * SOFTWARE.
  */
 
-import React from "react";
-import ReactDOM from "react-dom/client";
-import { HydratedRouter } from "react-router/dom";
-import "@styles/index.css";
-
-ReactDOM.hydrateRoot(
-  document,
-  <React.StrictMode>
-    <HydratedRouter />
-  </React.StrictMode>,
-);
+export default interface RouteMetadata {
+  /**
+   * Optional title for the route, used for display or identification.
+   */
+  title?: string;
+}

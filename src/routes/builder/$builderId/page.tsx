@@ -1,25 +1,4 @@
-/*
- * Copyright (c) 2025 Novumlogic Technologies Pvt Ltd
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { createFileRoute } from "@tanstack/react-router";
 import { FiltersPanel, TableDetailsPanel } from "@components/panels";
 import { Button } from "@components/ui/button";
 import {
@@ -29,20 +8,22 @@ import {
 } from "@components/ui/resizable";
 import { ScrollArea } from "@components/ui/scroll_area";
 import { FILTERS, SIDEPANEL_DEFAULT_WIDTH } from "@constants";
-import Database from "@controllers/database";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import useDatabase from "@hooks/use_database";
 import useFocus from "@hooks/use_focus";
-import Builder from "@pages/builder";
-import { DnDProvider } from "@providers/dnd_provider";
-import FocusProvider from "@providers/focus_provider";
+import Builder from "@components/builder";
 import { useQuery } from "@tanstack/react-query";
 import type {
   AnyNodeProps,
   BuilderNode,
   SelectNodeProperties,
 } from "@type/node_properties";
-import { addEdge, ReactFlowProvider, useReactFlow, type Connection, type Edge } from "@xyflow/react";
+import {
+  addEdge,
+  useReactFlow,
+  type Connection,
+  type Edge,
+} from "@xyflow/react";
 import {
   createElement,
   Fragment,
@@ -52,28 +33,25 @@ import {
   type JSX,
 } from "react";
 import type { ImperativePanelHandle } from "react-resizable-panels";
-import { useParams } from "react-router";
+import Database from "@controllers/database";
+import type RouteMetadata from "@type/route_metadata";
 
 const database: Database = new Database();
 
-export default function BuilderLayout(): JSX.Element {
-  return (
-    <DnDProvider>
-      <FocusProvider focusNodeProps={null}>
-        <ReactFlowProvider>
-          <BuilderMetaLayout />
-        </ReactFlowProvider>
-      </FocusProvider>
-    </DnDProvider>
-  );
-}
+export const Route = createFileRoute("/builder/$builderId/")({
+  staticData: {
+    title: "Query Builder",
+  } satisfies RouteMetadata,
+  component: BuilderPage,
+});
 
-function BuilderMetaLayout(): JSX.Element {
-  const { builderId } = useParams<{ builderId: string }>();
+function BuilderPage(): JSX.Element {
+  const { builderId } = Route.useParams();
   const {
     store: { schema, graph },
-    dispatch,
-  } = useDatabase();
+  } = useDatabase({
+    initialized: true,
+  });
   const { getNode, setEdges, setNodes, updateNodeData, setViewport } =
     useReactFlow<BuilderNode, Edge>();
 
@@ -81,23 +59,9 @@ function BuilderMetaLayout(): JSX.Element {
 
   const filterPanelRef = useRef<ImperativePanelHandle>(null);
 
-  const schemaRequest = useQuery({
-    queryKey: ["database_schema"],
-    enabled: schema === null,
-    queryFn: async () => {
-      const schemaFetchResult = await database.getDatabaseSchema();
-      if (!schemaFetchResult.ok) {
-        throw new Error("Failed to fetch database schema");
-      }
-
-      return schemaFetchResult.value.payload;
-    },
-  });
-
   const queryRequest = useQuery({
     queryKey: [builderId],
     refetchOnWindowFocus: false,
-    enabled: Boolean(schema) || schemaRequest.isSuccess,
     queryFn: async () => {
       if (builderId === undefined) {
         throw new Error("Builder ID is required");
@@ -173,22 +137,10 @@ function BuilderMetaLayout(): JSX.Element {
             {} as Record<string, { selected: boolean }>,
           ),
         } satisfies SelectNodeProperties);
-
       }
     },
     [getNode, schema, setEdges, updateNodeData],
   );
-
-  useEffect(() => {
-    if (schemaRequest.data === undefined) return;
-
-    dispatch({
-      type: "SET_SCHEMA",
-      payload: {
-        schema: schemaRequest.data,
-      },
-    });
-  }, [dispatch, schemaRequest.data]);
 
   useEffect(() => {
     if (queryRequest.data === undefined) return;
@@ -198,10 +150,9 @@ function BuilderMetaLayout(): JSX.Element {
     setViewport(queryRequest.data.viewport);
   }, [queryRequest.data, setEdges, setNodes, setViewport]);
 
-  if (schemaRequest.isLoading || queryRequest.isLoading) {
+  if (queryRequest.isLoading) {
     return <div>Loading...</div>;
   }
-  
 
   return (
     <ResizablePanelGroup
@@ -214,7 +165,7 @@ function BuilderMetaLayout(): JSX.Element {
         maxSize={SIDEPANEL_DEFAULT_WIDTH}
         collapsible={true}
       >
-        <TableDetailsPanel schema={schemaRequest.data!} />
+        <TableDetailsPanel schema={schema} />
       </ResizablePanel>
       <ResizableHandle className={"bg-border"} />
       <ResizablePanel

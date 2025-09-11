@@ -18,7 +18,7 @@
       "@hooks/*": ["./src/hooks/*"],
       "@layouts/*": ["./src/layouts/*"],
       "@lib/*": ["./src/lib/*"],
-      "@pages/*": ["./src/pages/*"],
+      "@routes/*": ["./src/routes/*"],
       "@providers/*": ["./src/providers/*"],
       "@services/*": ["./src/services/*"],
       "@type/*": ["./src/type/*"],

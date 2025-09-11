@@ -22,11 +22,22 @@
 
 import path from "path";
 import { defineConfig } from "vite";
-import { reactRouter } from "@react-router/dev/vite";
+import react from "@vitejs/plugin-react-swc";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [reactRouter(), tailwindcss()],
+  plugins: [
+    tanstackRouter({
+      target: "react",
+      autoCodeSplitting: true,
+      routesDirectory: "src/routes",
+      routeToken: "layout",
+      indexToken: "page",
+    }),
+    react(),
+    tailwindcss(),
+  ],
   resolve: {
     alias: {
       "@styles": path.resolve(__dirname, "./src/styles"),
@@ -36,7 +47,7 @@ export default defineConfig({
       "@hooks": path.resolve(__dirname, "./src/hooks"),
       "@layouts": path.resolve(__dirname, "./src/layouts"),
       "@lib": path.resolve(__dirname, "./src/lib"),
-      "@pages": path.resolve(__dirname, "./src/pages"),
+      "@routes": path.resolve(__dirname, "./src/routes"),
       "@providers": path.resolve(__dirname, "./src/providers"),
       "@services": path.resolve(__dirname, "./src/services"),
       "@type": path.resolve(__dirname, "./src/type"),

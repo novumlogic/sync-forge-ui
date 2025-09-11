@@ -28,10 +28,19 @@ import "@xyflow/react/dist/style.css";
 import { TableNode } from "@components/nodes";
 import { KeyIcon } from "@heroicons/react/24/solid";
 import { FingerPrintIcon } from "@heroicons/react/24/outline";
+import { createFileRoute } from "@tanstack/react-router";
+import type RouteMetadata from "@type/route_metadata";
 
 const database: Database = new Database();
 
-export default function Home() {
+export const Route = createFileRoute("/")({
+  staticData: {
+    title: "Database Schema",
+  } satisfies RouteMetadata,
+  component: Home,
+});
+
+function Home() {
   const {
     store: { schema },
     dispatch,

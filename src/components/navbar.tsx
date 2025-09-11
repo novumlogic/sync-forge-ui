@@ -25,8 +25,8 @@ import { Button } from "@components/ui/button.tsx";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import Database from "@controllers/database";
 import { toast } from "sonner";
-import { Link, useLocation, useMatches } from "react-router";
-import type RouteHandle from "@type/route_handle";
+import type RouteMetadata from "@type/route_metadata";
+import { Link, useLocation, useMatches } from "@tanstack/react-router";
 
 export default function Navbar(): JSX.Element {
   const matches = useMatches();
@@ -34,10 +34,11 @@ export default function Navbar(): JSX.Element {
 
   const matchWithTitle = [...matches]
     .reverse()
-    .find((m) => (m.handle as RouteHandle | undefined)?.title);
+    .find((m) => (m.staticData as RouteMetadata | undefined)?.title);
 
   const title =
-    (matchWithTitle?.handle as RouteHandle | undefined)?.title ?? "Syncforge";
+    (matchWithTitle?.staticData as RouteMetadata | undefined)?.title ??
+    "Syncforge";
 
   useEffect(() => {
     document.title = title;
@@ -52,8 +53,11 @@ export default function Navbar(): JSX.Element {
       </div>
       <div className={"flex space-x-3"}>
         <Link
-          to={
-            location.pathname === "/" ? "/builder/fetch_all_identifiers" : "/"
+          to={location.pathname === "/" ? "/builder/$builderId" : "/"}
+          params={
+            location.pathname === "/"
+              ? { builderId: "fetch_all_identifiers" }
+              : {}
           }
         >
           <Button variant={"outline"} className={"cursor-pointer"}>
