@@ -27,6 +27,8 @@ import {
   type ReactNode,
   useReducer,
 } from "react";
+import cloneDeep from "lodash.clonedeep";
+
 export type FocusAction =
   | {
       type: "FOCUS_NODE";
@@ -42,17 +44,22 @@ const focusReducer = (
   focusedNodeProps: AnyNodeProps | null,
   action: FocusAction,
 ): AnyNodeProps | null => {
+  let focusNodePropsCopy = cloneDeep(focusedNodeProps);
+
   switch (action.type) {
     case "FOCUS_NODE": {
-      return action.payload.properties;
+      focusNodePropsCopy = action.payload.properties;
+      break;
     }
     case "CLEAR_FOCUS": {
-      return null;
+      focusNodePropsCopy = null;
+      break;
     }
     default: {
-      return focusedNodeProps;
+      break;
     }
   }
+  return focusNodePropsCopy;
 };
 
 export const FocusContext = createContext<{

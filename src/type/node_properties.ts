@@ -83,6 +83,6 @@ export type FilterNodeType = Exclude<keyof NodePropertiesMap, "table">;
 export type FilterDefinition = {
   [K in Exclude<keyof NodePropertiesMap, "table">]: NodePropertiesMap[K] & {
     type: K;
-    panelComponent: (props: NodePropertiesMap[K]) => ReactNode;
+    panelComponent: () => ReactNode;
   };
 }[Exclude<keyof NodePropertiesMap, "table">];

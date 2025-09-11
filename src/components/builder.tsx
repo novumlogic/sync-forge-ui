@@ -25,11 +25,7 @@ import {
   Background,
   BackgroundVariant,
   ReactFlow,
-  useEdgesState,
-  useNodesState,
-  useReactFlow,
   type Connection,
-  type Edge,
   type ReactFlowInstance,
 } from "@xyflow/react";
 import {
@@ -44,36 +40,33 @@ import "@xyflow/react/dist/style.css";
 import { TableNode, SelectNode } from "@components/nodes";
 import useDnD from "@hooks/use_dnd";
 import { isConnectionValid } from "@lib/validators";
-import type { DependencyGraph } from "@lib/dependency_graph";
+import useBuilder from "@hooks/use_builder";
+import useDatabase from "@hooks/use_database";
+import useFocus from "@hooks/use_focus";
 
 interface BuilderProps {
-  initialNodes: Array<BuilderNode>;
-  initialEdges: Array<Edge>;
-  graph: DependencyGraph | null;
   onNodeClick: (node: AnyNodeProps) => void;
-  onNodeAdded: (node: BuilderNode) => void;
-  onConnectionAdded: (connection: Connection) => void;
 }
 
 export default function Builder({
-  initialNodes,
-  initialEdges,
-  graph,
   onNodeClick,
-  onNodeAdded,
-  onConnectionAdded,
 }: Readonly<BuilderProps>): JSX.Element {
-  const { screenToFlowPosition } = useReactFlow();
+  const { nodes, edges, dispatch } = useBuilder();
+
+  const {
+    store: { schema, graph },
+  } = useDatabase({
+    initialized: true,
+  });
 
   const [nodeProperties, setNodeProperties] = useDnD();
+
+  const { focusedNodeProps, dispatch: focusDispatch } = useFocus();
 
   const queryBuilderContainerRef = useRef<HTMLDivElement | null>(null);
 
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance<BuilderNode> | null>(null);
-    
-  const [nodes, , onNodesChange] = useNodesState<BuilderNode>(initialNodes);
-  const [edges, , onEdgesChange] = useEdgesState<Edge>(initialEdges);
 
   const canvasDragStartHandler = useCallback(
     (event: DragEvent) => {
@@ -88,15 +81,29 @@ export default function Builder({
     event.dataTransfer.dropEffect = "move";
   }, []);
 
+  const connectionHandler = useCallback(
+    (connection: Connection) => {
+      dispatch({
+        type: "ADD_EDGE",
+        payload: {
+          connection: connection,
+          schema: schema,
+          focusedNodeId: focusedNodeProps?.id ?? null,
+        },
+      });
+    },
+    [dispatch, focusedNodeProps, schema],
+  );
+
   const canvasDropHandler = useCallback(
     (event: DragEvent) => {
       event.preventDefault();
 
-      if (!nodeProperties) return;
+      if (nodeProperties === null || reactFlowInstance === null) return;
 
       const { left, top } = event.currentTarget.getBoundingClientRect();
 
-      const position = screenToFlowPosition({
+      const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX - left / 2,
         y: event.clientY - top / 2,
       });
@@ -108,9 +115,14 @@ export default function Builder({
         data: nodeProperties.props,
       } as BuilderNode;
 
-      onNodeAdded(newNode);
+      dispatch({
+        type: "ADD_NODE",
+        payload: {
+          node: newNode,
+        },
+      });
     },
-    [nodeProperties, onNodeAdded, screenToFlowPosition],
+    [dispatch, nodeProperties, reactFlowInstance],
   );
 
   useEffect(() => {
@@ -138,6 +150,19 @@ export default function Builder({
     };
   }, [reactFlowInstance]);
 
+  useEffect(() => {
+    document.addEventListener("focusedNodeMutation", (event) => {
+      setTimeout(() => {
+        focusDispatch({
+          type: "FOCUS_NODE",
+          payload: {
+            properties: (event as CustomEvent).detail as AnyNodeProps,
+          },
+        });
+      }, 10);
+    });
+  }, [dispatch, focusDispatch]);
+
   return (
     <div
       ref={queryBuilderContainerRef}
@@ -157,6 +182,12 @@ export default function Builder({
         }}
         onInit={(instance) => {
           setReactFlowInstance(instance);
+          dispatch({
+            type: "SET_INSTANCE",
+            payload: {
+              instace: instance,
+            },
+          });
         }}
         isValidConnection={(connection) =>
           isConnectionValid(connection, nodes, edges, graph)
@@ -165,9 +196,23 @@ export default function Builder({
         onDragStart={(event) => canvasDragStartHandler(event)}
         onDragOver={canvasDragOverHandler}
         onDrop={canvasDropHandler}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnectionAdded}
+        onNodesChange={(changes) => {
+          dispatch({
+            type: "UPDATE_NODE",
+            payload: {
+              changes: changes,
+            },
+          });
+        }}
+        onEdgesChange={(changes) => {
+          dispatch({
+            type: "UPDATE_EDGE",
+            payload: {
+              changes: changes,
+            },
+          });
+        }}
+        onConnect={connectionHandler}
       >
         {/* <Panel position="top-center">
           <div

@@ -20,27 +20,24 @@
  * SOFTWARE.
  */
 
-import { useCallback, type JSX, type DragEvent, Fragment } from "react";
+import { useCallback, type JSX, type DragEvent, Fragment, memo } from "react";
 import TableDetail from "../table_detail";
 import useDnD from "@hooks/use_dnd";
 import type {
-  BuilderNode,
   DragNodePayload,
   NodePropertiesMap,
 } from "@type/node_properties";
-import { useReactFlow, type Edge } from "@xyflow/react";
 import { ScrollArea } from "@components/ui/scroll_area";
-import type { DatabaseSchema } from "@type/database_schema";
+import useDatabase from "@hooks/use_database";
+import useBuilder from "@hooks/use_builder";
 
-interface TableDetailsListProps {
-  schema: DatabaseSchema;
-}
-
-export default function TableDetailsPanel({
-  schema,
-}: Readonly<TableDetailsListProps>): JSX.Element {
+function TableDetailsPanel(): JSX.Element {
   const [, setNodeProperties] = useDnD();
-  const { getNode, fitView } = useReactFlow<BuilderNode, Edge>();
+  const {
+    store: { schema },
+  } = useDatabase({ initialized: true });
+
+  const { nodes, instance } = useBuilder();
 
   const nodeDragHandler: <K extends keyof NodePropertiesMap>(
     event: DragEvent<HTMLDivElement>,
@@ -60,15 +57,15 @@ export default function TableDetailsPanel({
 
   const nodeExists = useCallback(
     (table: string): boolean => {
-      return getNode(table) !== undefined;
+      return nodes.some((n) => n.id === table);
     },
-    [getNode],
+    [nodes],
   );
 
   const nodeClickHandler = useCallback(
     (table: string) => {
       if (!nodeExists(table)) return;
-      fitView({
+      instance!.fitView({
         nodes: [
           {
             id: table,
@@ -78,7 +75,7 @@ export default function TableDetailsPanel({
         interpolate: "smooth",
       });
     },
-    [fitView, nodeExists],
+    [instance, nodeExists],
   );
 
   return (
@@ -115,3 +112,5 @@ export default function TableDetailsPanel({
     </Fragment>
   );
 }
+
+export default memo(TableDetailsPanel);
